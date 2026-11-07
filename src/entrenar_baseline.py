@@ -5,8 +5,12 @@ Uso (desde la raíz del proyecto):
     python -m src.entrenar_baseline
 
 Genera:
-    models/logistica_sin_balanceo.joblib   -> {"modelo": pipeline entrenado, "metadatos": {...}}  (no se versiona)
-    models/logistica_sin_balanceo.json     -> los mismos metadatos en texto legible           (sí se versiona)
+    models/logistica_sin_balanceo.joblib   -> {"modelo": pipeline entrenado, "metadatos": {...},
+                                               "validacion": {"y": etiquetas, "puntaje": puntajes}}  (no se versiona)
+    models/logistica_sin_balanceo.json     -> los metadatos en texto legible (sí se versiona)
+
+Los puntajes de validación se guardan para que la interfaz muestre la curva PR y métricas REALISTAS
+(sobre las 42.559 transacciones de validación) sin cargar el dataset completo: son solo dos vectores.
 
 Por qué un script y no solo el notebook: así cualquiera puede regenerar el modelo desde cero con un
 comando, sin depender del estado de un notebook. La interfaz siempre carga un archivo producido por aquí.
@@ -25,6 +29,18 @@ from src.modelos import crear_logistica_sin_balanceo
 
 NOMBRE = "logistica_sin_balanceo"
 UMBRAL_POR_DEFECTO = 0.5
+# Umbrales para la tabla precalculada en validación (de más exigente a más permisivo)
+UMBRALES_TABLA = [0.9, 0.5, 0.3, 0.1, 0.05, 0.01]
+
+
+def tabla_umbrales(y_val, puntaje_val, umbrales=UMBRALES_TABLA) -> list:
+    """Para cada umbral: alertas, TP, FP, FN, precisión y recall sobre la validación COMPLETA."""
+    filas = []
+    for u in umbrales:
+        r = evaluar(y_val, puntaje_val, umbral=u)
+        filas.append({"umbral": u, "alertas": r["TP"] + r["FP"], "TP": r["TP"], "FP": r["FP"], "FN": r["FN"],
+                      "precision": round(r["precision"], 4), "recall": round(r["recall"], 4)})
+    return filas
 
 
 def entrenar_y_guardar():
@@ -58,6 +74,7 @@ def entrenar_y_guardar():
         "particion": {"train": len(y_train), "val": len(y_val), "test": len(y_test),
                       "fraudes_train": int(y_train.sum()), "fraudes_val": int(y_val.sum())},
         "metricas_val": metricas_val,
+        "umbrales_val": tabla_umbrales(y_val, puntaje_val),  # tabla precalculada para la interfaz
         "tiempo_entrenamiento_s": round(tiempo, 3),
         "version_sklearn": sklearn.__version__,  # un .joblib solo es confiable con la misma versión
     }
@@ -65,13 +82,17 @@ def entrenar_y_guardar():
     # 5. Guardar
     DIR_MODELOS.mkdir(parents=True, exist_ok=True)
     ruta_modelo = DIR_MODELOS / f"{NOMBRE}.joblib"
-    joblib.dump({"modelo": modelo, "metadatos": metadatos}, ruta_modelo)
+    validacion = {"y": y_val.to_numpy(), "puntaje": puntaje_val}  # para curva PR y métricas realistas en la app
+    joblib.dump({"modelo": modelo, "metadatos": metadatos, "validacion": validacion}, ruta_modelo)
     (DIR_MODELOS / f"{NOMBRE}.json").write_text(json.dumps(metadatos, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"Modelo guardado en {ruta_modelo} (entrenado en {tiempo:.2f} s)")
     print("Métricas en validación (umbral 0,5):")
     for k in ["AUPRC", "precision", "recall", "F1", "accuracy", "TP", "FP", "FN", "TN"]:
         print(f"  {k:10s} {metricas_val[k]}")
+    print("Tabla de umbrales en validación:")
+    for fila in metadatos["umbrales_val"]:
+        print("  ", fila)
 
 
 if __name__ == "__main__":

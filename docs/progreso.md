@@ -31,7 +31,7 @@
 - [x] `README.md` con instalación desde cero, fuente/licencia/cita de datos y estructura.
 
 ### Checklist Avance 1
-- [ ] Diagrama de flujo (CSV → preprocesamiento → modelo → puntaje → umbral → aprobar/alertar + métricas)
+- [~] Diagrama de flujo: `docs/diagrama_flujo.md` (Mermaid), con dos flujos (entrenamiento fuera de línea y uso en la interfaz), leyenda implementado / Avance 2 / prueba reservada, y tablas que explican cada bloque. Verificado que renderiza (Mermaid 11). **Falta:** exportar a PNG con mermaid.live y guardarlos en `docs/capturas/`.
 - [~] `notebooks/01_exploracion.ipynb`: creado (8 secciones: qué/por qué → código → preguntas de exposición). Verificado que corre sin errores. **Falta:** que Daniel lo ejecute (genera las figuras en `docs/capturas/`) y escriba las interpretaciones/conclusiones marcadas TODO.
 - [~] `notebooks/02_baseline.ipynb`: creado y verificado que corre (secciones qué/por qué → código → preguntas). Genera `docs/resultados_baseline_val.csv`, `docs/capturas/02_matriz_dummy_val.png`, `02_matriz_logistica_val.png`, `02_curva_pr_val.png`. **Falta:** que el equipo lo ejecute y escriba la interpretación (sección 6, TODO).
   - Resultados de la ejecución de prueba (validación, umbral 0,5): Dummy → accuracy 0,9983, recall 0, AUPRC 0,0017. Regresión logística sin balanceo → AUPRC 0,688, precisión 0,833, recall 0,493 (35 de 71 fraudes; FP 7, FN 36), accuracy 0,9990, entrenamiento ≈ 0,3 s (16 iteraciones de lbfgs).
@@ -39,6 +39,8 @@
 - [~] Documentación del entrenamiento: partición (train 198.608 / 331 fraudes; val 42.559 / 71; test 42.559 / 71; % fraude ≈ 0,167 % en los tres) e hiperparámetros (lbfgs, C=1,0, max_iter=1000) documentados en el notebook 02. Falta pasarlo al PDF del avance.
 - [x] Borrador de `app/app.py` (Streamlit), probado con `streamlit.testing.AppTest`: menú lateral (Analizar transacciones / Resultados del modelo / Acerca del proyecto), carga de CSV o CSV de ejemplo, validación de columnas (faltantes, no numéricas, nulos, Class ∉ {0,1}), selector de modelo (solo lista los .joblib que existen; diccionario `MODELOS` preparado para el Avance 2), slider de umbral con TP/FP/FN/TN/precisión/recall en vivo, matriz de confusión, tabla ordenada por puntaje y aviso ético en todas las secciones. Modelo con `st.cache_resource`, puntajes con `st.cache_data`.
   - Prueba con el CSV de ejemplo: umbral 0,5 → 35 alertas, TP 35, FP 0, FN 36, recall 0,493; umbral 0,05 → TP 54, FP 1, FN 17, recall 0,761.
+- [x] Notebook 02 usa `crear_logistica_sin_balanceo()` de `src/modelos.py` (una sola definición del pipeline). Re-verificado: AUPRC 0,6877.
+- [x] El `.joblib` ahora incluye los puntajes y etiquetas de la validación completa, y los metadatos incluyen `umbrales_val` (tabla para 0,9 / 0,5 / 0,3 / 0,1 / 0,05 / 0,01). En la app: "Resultados del modelo" muestra esa tabla y la curva PR; "Analizar" compara en vivo el CSV cargado con la validación completa para el mismo umbral. Ej. umbral 0,05: CSV de ejemplo FP 1 / precisión 0,982; validación completa FP 15 / precisión 0,783 (mismo TP 54 y recall 0,761).
 - [x] Modelo guardado: `python -m src.entrenar_baseline` → `models/logistica_sin_balanceo.joblib` (+ `.json` con metadatos versionado). Métricas idénticas al notebook 02 (AUPRC 0,6877).
 - [x] `data/ejemplo_transacciones.csv` (`python -m src.crear_csv_ejemplo`): 2.000 filas de VALIDACIÓN, 71 fraudes (3,55 %); sí se versiona (excepción en `.gitignore`). Ojo: su precisión es optimista por la mayor proporción de fraudes.
 - [ ] Registro IAG al día
@@ -48,7 +50,7 @@
 ## Próximo paso sugerido
 1. Equipo ejecuta y completa los TODO de `01_exploracion.ipynb` y `02_baseline.ipynb`.
 2. Maximiliano: ejecutar `streamlit run app/app.py`, revisar la interfaz y tomar capturas para el avance.
-3. Diagrama de flujo.
+3. Exportar los dos diagramas a PNG (instrucciones en `docs/diagrama_flujo.md`, sección 3).
 4. PDF del Avance 1 (máx. 4 págs.) y láminas (máx. 4).
 
 ---
@@ -59,3 +61,4 @@
 - **2026-11-07 (cont. 2):** `src/datos.py` (carga + eliminación de duplicados) y `notebooks/01_exploracion.ipynb`.
 - **2026-11-07 (cont. 3):** partición en `src/datos.py`, `src/evaluacion.py` y `notebooks/02_baseline.ipynb`.
 - **2026-11-07 (cont. 4):** `src/modelos.py`, `src/entrenar_baseline.py`, `src/crear_csv_ejemplo.py`, `app/app.py`, README (entrenar y ejecutar la app).
+- **2026-11-07 (cont. 5):** notebook 02 importa el pipeline de `src/modelos.py`; tabla de umbrales y curva PR de validación completa en la app; `docs/diagrama_flujo.md`.

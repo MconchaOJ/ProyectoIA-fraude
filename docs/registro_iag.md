@@ -84,3 +84,11 @@ Formato por entrada definido en `CLAUDE.md`, sección 8.
 - **Verificación hecha por el equipo:** _(completar: Maximiliano ejecuta `streamlit run app/app.py`, sube un CSV sin alguna columna para ver el error, mueve el umbral y compara las métricas con las del notebook 02)_
 - **Análisis crítico:** la IA advirtió que el CSV de ejemplo tiene ~20 veces más fraudes que la realidad, por lo que la precisión mostrada en la demo es optimista (con umbral 0,5 da precisión 1,0 en el ejemplo frente a 0,833 en validación completa). _(completar con la revisión propia)_
 - **Qué modificó o decidió el equipo:** usar validación (no prueba) para el CSV de la demo. _(completar)_
+
+### Entrada 11 — 2026-11-07 — Claude Code
+- **Prompt (resumido):** (1) que el notebook 02 importe el pipeline desde `src/modelos.py`; (2) mostrar en la app métricas realistas sobre la validación completa (tabla de umbrales y curva PR, precalculadas en `src/entrenar_baseline.py`), porque el CSV de ejemplo subestima los falsos positivos; (3) diagrama de flujo en Mermaid (entrenamiento y uso), con lo implementado distinguido de lo del Avance 2, la explicación de cada bloque y cómo exportarlo a PNG.
+- **Respuesta / qué entregó:** notebook 02 regenerado (AUPRC re-verificada 0,6877); `tabla_umbrales()` en el script y puntajes de validación guardados en el `.joblib` (~0,7 MB, sin cargar el dataset en la app); app con tabla de umbrales, curva PR y comparación en vivo CSV vs validación completa; `docs/diagrama_flujo.md` con dos diagramas, leyenda, tablas explicativas e instrucciones de exportación. Renderizó los diagramas con Chrome headless para verificar la sintaxis y acortó etiquetas que se cortaban.
+- **Justificación del uso:** apoyo técnico, documentación y visualización.
+- **Verificación hecha por el equipo:** _(completar: abrir los diagramas en mermaid.live; en la app, mover el umbral y comprobar que FP de validación completa coinciden con la tabla de "Resultados del modelo")_
+- **Análisis crítico:** la observación de que el CSV de ejemplo subestimaba los FP fue del equipo; la IA la confirmó con datos (umbral 0,05: 1 FP en el ejemplo frente a 15 en validación completa, con el mismo TP). _(completar)_
+- **Qué modificó o decidió el equipo:** _(completar)_

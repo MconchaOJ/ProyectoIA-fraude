@@ -25,7 +25,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
 from src.config import COLUMNA_OBJETIVO, DIR_DATOS, DIR_MODELOS  # noqa: E402
-from src.evaluacion import evaluar, graficar_matriz_confusion  # noqa: E402
+from src.evaluacion import evaluar, graficar_curva_pr, graficar_matriz_confusion  # noqa: E402
 
 # Modelos disponibles: nombre visible -> archivo en models/.
 # Avance 2: agregar aquí una línea por modelo nuevo (p. ej. "Random Forest + SMOTE": "rf_smote.joblib").
@@ -93,6 +93,9 @@ if not disponibles:
 nombre_modelo = st.sidebar.selectbox("Modelo", list(disponibles))
 archivo_modelo = disponibles[nombre_modelo]
 metadatos = cargar_modelo(archivo_modelo)["metadatos"]
+# Puntajes y etiquetas de la validación COMPLETA (42.559 transacciones), guardados por src/entrenar_baseline.py.
+# Permiten mostrar cifras realistas sin cargar el dataset de 150 MB.
+validacion = cargar_modelo(archivo_modelo).get("validacion")
 st.sidebar.caption(f"Entrenado: {metadatos['fecha_entrenamiento']}")
 
 
@@ -110,8 +113,13 @@ def seccion_analizar():
         df = pd.read_csv(archivo)
     elif usar_ejemplo and RUTA_EJEMPLO.exists():
         df = pd.read_csv(RUTA_EJEMPLO)
-        st.info("CSV de ejemplo: tiene ~3,6 % de fraudes, unas 20 veces más que la realidad (0,167 %). "
-                "El recall es comparable, pero la precisión sale más alta que en un banco real.")
+        st.info(
+            "**CSV de ejemplo, solo para la demo.** Tiene 2.000 transacciones de validación con sus 71 fraudes "
+            "(3,55 % de fraudes, unas 20 veces más que la realidad). Como trae ~22 veces menos transacciones "
+            "legítimas que la validación completa, **los falsos positivos se ven artificialmente bajos** y la "
+            "precisión sale optimista. Las cifras realistas están en **Resultados del modelo** y, para el umbral "
+            "elegido, en la tabla comparativa de más abajo."
+        )
     else:
         st.info("Sube un CSV o marca la opción del CSV de ejemplo para comenzar.")
         return
@@ -154,6 +162,17 @@ def seccion_analizar():
         st.caption(f"AUPRC en este CSV: {res['AUPRC']:.3f} (no depende del umbral). "
                    f"Accuracy: {res['accuracy']:.4f} (se muestra solo para contrastar: engaña con datos desbalanceados).")
 
+        # Mismo umbral aplicado a la validación COMPLETA: muestra cuánto cambian FP y precisión
+        if validacion is not None:
+            rv = evaluar(validacion["y"], validacion["puntaje"], umbral=umbral)
+            st.caption(f"Comparación con el mismo umbral ({umbral:.2f}): CSV cargado vs validación completa")
+            st.dataframe(pd.DataFrame([
+                {"datos": f"CSV cargado ({len(df):,} filas)".replace(",", "."), "TP": res["TP"], "FP": res["FP"],
+                 "FN": res["FN"], "precisión": round(res["precision"], 3), "recall": round(res["recall"], 3)},
+                {"datos": f"Validación completa ({len(validacion['y']):,} filas)".replace(",", "."), "TP": rv["TP"],
+                 "FP": rv["FP"], "FN": rv["FN"], "precisión": round(rv["precision"], 3), "recall": round(rv["recall"], 3)},
+            ]), hide_index=True)
+
         fig, ax = plt.subplots(figsize=(4, 3.5))
         graficar_matriz_confusion(res["matriz"], titulo=f"Matriz de confusión (umbral {umbral:.2f})", ax=ax)
         col_fig, _ = st.columns([1, 2])  # columna angosta para que la figura no ocupe todo el ancho
@@ -192,9 +211,20 @@ def seccion_resultados():
     if ruta_tabla.exists():
         st.subheader("Comparación con el baseline (validación)")
         st.dataframe(pd.read_csv(ruta_tabla).round(4), hide_index=True)
-    ruta_pr = RAIZ / "docs" / "capturas" / "02_curva_pr_val.png"
-    if ruta_pr.exists():
-        st.image(str(ruta_pr), caption="Curva Precisión-Recall en validación", width=600)
+    st.subheader("Efecto del umbral en la validación completa")
+    p = metadatos["particion"]
+    st.write(f"Calculado sobre las {p['val']:,} transacciones de validación ({p['fraudes_val']} fraudes), ".replace(",", ".")
+             + "con la proporción real de fraudes. Estas son las cifras realistas; las del CSV de ejemplo son solo para la demo.")
+    st.dataframe(pd.DataFrame(metadatos["umbrales_val"]), hide_index=True)
+
+    if validacion is not None:
+        st.subheader("Curva Precisión-Recall (validación)")
+        fig, ax = plt.subplots(figsize=(7, 5))
+        graficar_curva_pr(validacion["y"], {metadatos["descripcion"]: validacion["puntaje"]},
+                          titulo="Curva Precisión-Recall — validación", ax=ax)
+        col_fig, _ = st.columns([2, 1])
+        col_fig.pyplot(fig)
+        plt.close(fig)
 
 
 # ------------------------------------------------------------------ Sección 3: Acerca del proyecto
