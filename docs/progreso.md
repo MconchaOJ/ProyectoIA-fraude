@@ -19,6 +19,10 @@
 - `requirements.txt`: pandas, numpy, scikit-learn, imbalanced-learn, matplotlib, seaborn, streamlit, joblib, kagglehub, jupyter (**sin versiones fijadas todavía**).
 - `docs/registro_iag.md` creado con las entradas previas.
 
+### Decisiones tomadas
+- **Duplicados eliminados antes de la partición** (evita fuga train→test). De las 1.081 copias, 1.062 son legítimas y 19 fraudes; no hay copias con etiqueta contradictoria. Dataset final: **283.726 filas, 473 fraudes (0,167 %)**. Implementado en `src/datos.py` (`cargar_datos()` lo aplica por defecto; `eliminar_duplicados()`, `resumen_clases()`).
+- Git lo maneja Maximiliano: Claude Code no hace commits.
+
 ### Pendiente inmediato
 - [x] Entorno `.venv` (Python 3.14.7) creado y dependencias instaladas sin errores.
 - [x] Versiones fijadas en `requirements.txt` (scikit-learn 1.9.1, imbalanced-learn 0.14.2, pandas 3.1.1, numpy 2.5.4, streamlit 1.67.0, etc.).
@@ -27,7 +31,7 @@
 
 ### Checklist Avance 1
 - [ ] Diagrama de flujo (CSV → preprocesamiento → modelo → puntaje → umbral → aprobar/alertar + métricas)
-- [ ] `notebooks/01_exploracion.ipynb`: tamaño, tipos, nulos, duplicados, distribución de `Class`, `Amount` y `Time` por clase
+- [~] `notebooks/01_exploracion.ipynb`: creado (8 secciones: qué/por qué → código → preguntas de exposición). Verificado que corre sin errores. **Falta:** que Daniel lo ejecute (genera las figuras en `docs/capturas/`) y escriba las interpretaciones/conclusiones marcadas TODO.
 - [ ] `notebooks/02_baseline.ipynb`: partición 70/15/15 estratificada, Dummy + regresión logística sin balanceo (AUPRC, precisión, recall, matriz de confusión, accuracy)
 - [ ] Capturas/logs de las primeras pruebas
 - [ ] Documentación del entrenamiento (hiperparámetros, partición, resultados preliminares)
@@ -37,11 +41,12 @@
 ---
 
 ## Próximo paso sugerido
-1. Empezar `notebooks/01_exploracion.ipynb` (tamaño, tipos, nulos, duplicados, distribución de `Class`, `Amount` y `Time` por clase).
-2. Decidir qué hacer con las 1.081 filas duplicadas.
+1. Daniel ejecuta y completa los TODO de `01_exploracion.ipynb`.
+2. `notebooks/02_baseline.ipynb`: agregar la partición estratificada 70/15/15 a `src/datos.py`, Dummy + regresión logística sin balanceo.
 
 ---
 
 ## Historial de sesiones con Claude Code
 - **2026-11-07:** lectura de `CLAUDE.md`; estructura del repo, `.gitignore`, `config.py`, `descargar_datos.py`, `requirements.txt`, `registro_iag.md` y este archivo.
 - **2026-11-07 (cont.):** entorno instalado y versiones fijadas; dataset descargado y verificado; `README.md`.
+- **2026-11-07 (cont. 2):** `src/datos.py` (carga + eliminación de duplicados) y `notebooks/01_exploracion.ipynb`.

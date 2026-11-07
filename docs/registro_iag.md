@@ -60,3 +60,11 @@ Formato por entrada definido en `CLAUDE.md`, sección 8.
 - **Verificación hecha por el equipo:** _(completar: repetir la instalación en otro equipo siguiendo el README)_
 - **Análisis crítico:** los conteos salen de ejecutar código, no de la IA. Revisar que la cita de Dal Pozzolo et al. (2015) coincida con la indicada en la página de Kaggle.
 - **Qué modificó o decidió el equipo:** _(completar; pendiente decidir el tratamiento de duplicados)_
+
+### Entrada 8 — 2026-11-07 — Claude Code
+- **Prompt (resumido):** eliminar duplicados antes de la partición (mostrando su clase y el desbalance resultante), dejarlo en una función reutilizable en `src/datos.py` y crear el notebook de exploración por secciones (qué/por qué → código → preguntas de exposición con respuesta).
+- **Respuesta / qué entregó:** `src/datos.py` (`cargar_datos`, `eliminar_duplicados`, `resumen_clases`) y `notebooks/01_exploracion.ipynb` con secciones: carga y tipos, nulos y duplicados (con celda de decisión justificada), desbalance y accuracy de "nunca fraude", `Amount` y `Time` por clase (escala log y densidad), correlación de V1–V28 con `Class`, y conclusiones. Las interpretaciones de los gráficos y las conclusiones quedaron como TODO para Daniel.
+- **Justificación del uso:** apoyo técnico y explicación para preparar las preguntas individuales.
+- **Verificación hecha por el equipo:** _(completar: Daniel ejecuta el notebook y comprueba 1.081 duplicados = 1.062 legítimas + 19 fraudes; 283.726 filas y 473 fraudes después)_
+- **Análisis crítico:** la decisión de eliminar duplicados fue del equipo; la IA la implementó. Supuesto a revisar: tratar las copias como errores de registro y no como transacciones reales repetidas. Verificar la afirmación de que la correlación de Pearson con una clase muy desbalanceada queda acotada.
+- **Qué modificó o decidió el equipo:** _(completar)_
