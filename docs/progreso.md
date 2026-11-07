@@ -21,7 +21,7 @@
 
 ### Decisiones tomadas
 - **Duplicados eliminados antes de la partición** (evita fuga train→test). De las 1.081 copias, 1.062 son legítimas y 19 fraudes; no hay copias con etiqueta contradictoria. Dataset final: **283.726 filas, 473 fraudes (0,167 %)**. Implementado en `src/datos.py` (`cargar_datos()` lo aplica por defecto; `eliminar_duplicados()`, `resumen_clases()`).
-- Módulos compartidos: `src/datos.py` (`cargar_datos`, `particionar`, `tabla_particion`) y `src/evaluacion.py` (`evaluar`, `graficar_curva_pr`, `graficar_matriz_confusion`). Puntaje de riesgo = `predict_proba[:, 1]` (Isolation Forest: `-score_samples`).
+- Módulos compartidos: `src/datos.py` (`cargar_datos`, `particionar`, `tabla_particion`) y `src/evaluacion.py` (`evaluar`, `graficar_curva_pr`, `graficar_matriz_confusion`). `src/modelos.py` (`crear_logistica_sin_balanceo`), `src/entrenar_baseline.py`, `src/crear_csv_ejemplo.py`. Puntaje de riesgo = `predict_proba[:, 1]` (Isolation Forest: `-score_samples`).
 - Git lo maneja Maximiliano: Claude Code no hace commits.
 
 ### Pendiente inmediato
@@ -37,15 +37,19 @@
   - Resultados de la ejecución de prueba (validación, umbral 0,5): Dummy → accuracy 0,9983, recall 0, AUPRC 0,0017. Regresión logística sin balanceo → AUPRC 0,688, precisión 0,833, recall 0,493 (35 de 71 fraudes; FP 7, FN 36), accuracy 0,9990, entrenamiento ≈ 0,3 s (16 iteraciones de lbfgs).
 - [ ] Capturas/logs de las primeras pruebas
 - [~] Documentación del entrenamiento: partición (train 198.608 / 331 fraudes; val 42.559 / 71; test 42.559 / 71; % fraude ≈ 0,167 % en los tres) e hiperparámetros (lbfgs, C=1,0, max_iter=1000) documentados en el notebook 02. Falta pasarlo al PDF del avance.
-- [ ] Borrador de `app/app.py` (Streamlit)
+- [x] Borrador de `app/app.py` (Streamlit), probado con `streamlit.testing.AppTest`: menú lateral (Analizar transacciones / Resultados del modelo / Acerca del proyecto), carga de CSV o CSV de ejemplo, validación de columnas (faltantes, no numéricas, nulos, Class ∉ {0,1}), selector de modelo (solo lista los .joblib que existen; diccionario `MODELOS` preparado para el Avance 2), slider de umbral con TP/FP/FN/TN/precisión/recall en vivo, matriz de confusión, tabla ordenada por puntaje y aviso ético en todas las secciones. Modelo con `st.cache_resource`, puntajes con `st.cache_data`.
+  - Prueba con el CSV de ejemplo: umbral 0,5 → 35 alertas, TP 35, FP 0, FN 36, recall 0,493; umbral 0,05 → TP 54, FP 1, FN 17, recall 0,761.
+- [x] Modelo guardado: `python -m src.entrenar_baseline` → `models/logistica_sin_balanceo.joblib` (+ `.json` con metadatos versionado). Métricas idénticas al notebook 02 (AUPRC 0,6877).
+- [x] `data/ejemplo_transacciones.csv` (`python -m src.crear_csv_ejemplo`): 2.000 filas de VALIDACIÓN, 71 fraudes (3,55 %); sí se versiona (excepción en `.gitignore`). Ojo: su precisión es optimista por la mayor proporción de fraudes.
 - [ ] Registro IAG al día
 
 ---
 
 ## Próximo paso sugerido
 1. Equipo ejecuta y completa los TODO de `01_exploracion.ipynb` y `02_baseline.ipynb`.
-2. Guardar el modelo baseline con joblib en `models/` y hacer el borrador de `app/app.py` (Streamlit).
+2. Maximiliano: ejecutar `streamlit run app/app.py`, revisar la interfaz y tomar capturas para el avance.
 3. Diagrama de flujo.
+4. PDF del Avance 1 (máx. 4 págs.) y láminas (máx. 4).
 
 ---
 
@@ -54,3 +58,4 @@
 - **2026-11-07 (cont.):** entorno instalado y versiones fijadas; dataset descargado y verificado; `README.md`.
 - **2026-11-07 (cont. 2):** `src/datos.py` (carga + eliminación de duplicados) y `notebooks/01_exploracion.ipynb`.
 - **2026-11-07 (cont. 3):** partición en `src/datos.py`, `src/evaluacion.py` y `notebooks/02_baseline.ipynb`.
+- **2026-11-07 (cont. 4):** `src/modelos.py`, `src/entrenar_baseline.py`, `src/crear_csv_ejemplo.py`, `app/app.py`, README (entrenar y ejecutar la app).

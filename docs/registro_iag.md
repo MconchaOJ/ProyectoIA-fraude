@@ -76,3 +76,11 @@ Formato por entrada definido en `CLAUDE.md`, sección 8.
 - **Verificación hecha por el equipo:** _(completar: ejecutar el notebook; comprobar que la partición suma 283.726 filas y 473 fraudes, que el % de fraude es ≈ igual en los tres conjuntos y que el ejemplo pequeño de `evaluar()` da los valores calculados a mano)_
 - **Análisis crítico:** _(completar)_. Puntos a revisar: la explicación de AUPRC vs ROC-AUC (contrastar con la documentación de scikit-learn), y que lbfgs sea determinista (por eso no se fijó `random_state`).
 - **Qué modificó o decidió el equipo:** _(completar)_
+
+### Entrada 10 — 2026-11-07 — Claude Code
+- **Prompt (resumido):** script para entrenar y guardar el baseline con joblib y metadatos; CSV de ejemplo desde validación para la demo; borrador de la interfaz Streamlit según el boceto de la propuesta; README.
+- **Respuesta / qué entregó:** `src/modelos.py` (pipeline compartido), `src/entrenar_baseline.py` (guarda `.joblib` con modelo + metadatos y un `.json` legible), `src/crear_csv_ejemplo.py` (71 fraudes + 1.929 legítimas de validación), excepción en `.gitignore`, `app/app.py` (menú, carga y validación de CSV, selector de modelo, slider de umbral con métricas en vivo, matriz de confusión, tabla por riesgo, aviso ético, caché), README actualizado. Probó la app con `AppTest` (3 secciones, cambio de umbral, validación de columnas).
+- **Justificación del uso:** apoyo técnico en la integración modelo-interfaz y explicación del funcionamiento de Streamlit (re-ejecución del script, caché) para la defensa oral.
+- **Verificación hecha por el equipo:** _(completar: Maximiliano ejecuta `streamlit run app/app.py`, sube un CSV sin alguna columna para ver el error, mueve el umbral y compara las métricas con las del notebook 02)_
+- **Análisis crítico:** la IA advirtió que el CSV de ejemplo tiene ~20 veces más fraudes que la realidad, por lo que la precisión mostrada en la demo es optimista (con umbral 0,5 da precisión 1,0 en el ejemplo frente a 0,833 en validación completa). _(completar con la revisión propia)_
+- **Qué modificó o decidió el equipo:** usar validación (no prueba) para el CSV de la demo. _(completar)_

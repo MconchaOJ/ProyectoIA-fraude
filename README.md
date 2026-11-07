@@ -41,24 +41,55 @@ dejar `creditcard.csv` dentro de `data/`.
 
 ## Ejecución
 
+Todos los comandos se ejecutan desde la raíz del proyecto, con el entorno activado.
+
 | Paso | Comando / archivo |
 |---|---|
 | Exploración de datos | `notebooks/01_exploracion.ipynb` |
-| Baseline | `notebooks/02_baseline.ipynb` |
-| Modelos principales | `notebooks/03_modelos.ipynb` |
+| Baseline (análisis) | `notebooks/02_baseline.ipynb` |
+| Entrenar y guardar el modelo para la interfaz | `python -m src.entrenar_baseline` |
+| Regenerar el CSV de ejemplo de la demo | `python -m src.crear_csv_ejemplo` |
+| Modelos principales (Avance 2) | `notebooks/03_modelos.ipynb` |
 | Interfaz | `streamlit run app/app.py` |
 
-Los notebooks se abren con `jupyter notebook` desde la raíz del proyecto (con el entorno activado).
+Los notebooks se abren con `jupyter notebook`.
+
+### Entrenar el modelo
+
+```bash
+python -m src.entrenar_baseline
+```
+
+Entrena la regresión logística sin balanceo (baseline) con la partición 70/15/15 y genera:
+- `models/logistica_sin_balanceo.joblib`: el pipeline entrenado (no se versiona; se regenera con este comando).
+- `models/logistica_sin_balanceo.json`: metadatos (columnas esperadas, fecha, hiperparámetros, métricas en validación).
+
+### Ejecutar la interfaz
+
+```bash
+streamlit run app/app.py
+```
+
+Se abre en el navegador (http://localhost:8501). Antes hay que haber entrenado el modelo. Para probarla se
+puede subir cualquier CSV con las columnas `Time`, `V1`–`V28` y `Amount` (si trae `Class`, se calculan
+métricas) o marcar la opción del CSV de ejemplo, `data/ejemplo_transacciones.csv`. Ese archivo tiene 2.000
+transacciones del conjunto de **validación**, con sus 71 fraudes. Como su proporción de fraudes (3,55 %) es
+mucho mayor que la real, la precisión que se ve en la demo es más alta que la que tendría el modelo en un banco.
 
 ## Estructura
 
 ```
-├── data/          # creditcard.csv (no versionado)
+├── data/          # creditcard.csv (no versionado) y ejemplo_transacciones.csv (demo)
 ├── notebooks/     # exploración, baseline y modelos
 ├── src/
 │   ├── config.py           # semilla (RANDOM_STATE = 42), rutas y proporciones 70/15/15
-│   └── descargar_datos.py  # descarga del dataset con kagglehub
-├── models/        # modelo final .joblib (no versionado)
+│   ├── descargar_datos.py  # descarga del dataset con kagglehub
+│   ├── datos.py            # carga sin duplicados y partición 70/15/15
+│   ├── modelos.py          # definición de los pipelines
+│   ├── evaluacion.py       # métricas, curva PR y matriz de confusión
+│   ├── entrenar_baseline.py
+│   └── crear_csv_ejemplo.py
+├── models/        # modelos .joblib (no versionados) y sus metadatos .json
 ├── app/           # interfaz Streamlit
 ├── docs/          # registro IAG, diagrama de flujo, capturas
 └── informe/

@@ -1,8 +1,10 @@
 # Datos: el CSV pesa ~150 MB, se descarga con src/descargar_datos.py
 data/*.csv
 data/*.zip
+# Excepción: muestra pequeña de VALIDACIÓN para la demo de la interfaz (sí se versiona)
+!data/ejemplo_transacciones.csv
 
-# Modelos entrenados (se regeneran ejecutando los notebooks)
+# Modelos entrenados (se regeneran con python -m src.entrenar_baseline); los .json de metadatos sí se versionan
 models/*.joblib
 
 # Entorno virtual y caché de Python
