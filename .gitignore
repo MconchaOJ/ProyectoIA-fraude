@@ -1,0 +1,21 @@
+# Datos: el CSV pesa ~150 MB, se descarga con src/descargar_datos.py
+data/*.csv
+data/*.zip
+
+# Modelos entrenados (se regeneran ejecutando los notebooks)
+models/*.joblib
+
+# Entorno virtual y caché de Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
