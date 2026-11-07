@@ -43,7 +43,8 @@
 - [x] El `.joblib` ahora incluye los puntajes y etiquetas de la validación completa, y los metadatos incluyen `umbrales_val` (tabla para 0,9 / 0,5 / 0,3 / 0,1 / 0,05 / 0,01). En la app: "Resultados del modelo" muestra esa tabla y la curva PR; "Analizar" compara en vivo el CSV cargado con la validación completa para el mismo umbral. Ej. umbral 0,05: CSV de ejemplo FP 1 / precisión 0,982; validación completa FP 15 / precisión 0,783 (mismo TP 54 y recall 0,761).
 - [x] Modelo guardado: `python -m src.entrenar_baseline` → `models/logistica_sin_balanceo.joblib` (+ `.json` con metadatos versionado). Métricas idénticas al notebook 02 (AUPRC 0,6877).
 - [x] `data/ejemplo_transacciones.csv` (`python -m src.crear_csv_ejemplo`): 2.000 filas de VALIDACIÓN, 71 fraudes (3,55 %); sí se versiona (excepción en `.gitignore`). Ojo: su precisión es optimista por la mayor proporción de fraudes.
-- [ ] Registro IAG al día
+- [x] `docs/guia_estudio.md`: guía de defensa (flujo paso a paso, conceptos con nuestros números, tablas, recorrido por el código, interfaz, IAG, limitaciones, 25 preguntas con responsable, glosario).
+- [ ] Registro IAG al día (entradas 1–12 creadas; faltan los campos _(completar)_ del equipo)
 
 ---
 
@@ -51,7 +52,8 @@
 1. Equipo ejecuta y completa los TODO de `01_exploracion.ipynb` y `02_baseline.ipynb`.
 2. Maximiliano: ejecutar `streamlit run app/app.py`, revisar la interfaz y tomar capturas para el avance.
 3. Exportar los dos diagramas a PNG (instrucciones en `docs/diagrama_flujo.md`, sección 3).
-4. PDF del Avance 1 (máx. 4 págs.) y láminas (máx. 4).
+4. Todo el equipo: estudiar `docs/guia_estudio.md` y contrastar las afirmaciones marcadas para verificar (sección 7).
+5. PDF del Avance 1 (máx. 4 págs.) y láminas (máx. 4).
 
 ---
 
@@ -62,3 +64,4 @@
 - **2026-11-07 (cont. 3):** partición en `src/datos.py`, `src/evaluacion.py` y `notebooks/02_baseline.ipynb`.
 - **2026-11-07 (cont. 4):** `src/modelos.py`, `src/entrenar_baseline.py`, `src/crear_csv_ejemplo.py`, `app/app.py`, README (entrenar y ejecutar la app).
 - **2026-11-07 (cont. 5):** notebook 02 importa el pipeline de `src/modelos.py`; tabla de umbrales y curva PR de validación completa en la app; `docs/diagrama_flujo.md`.
+- **2026-11-07 (cont. 6):** `docs/guia_estudio.md`.

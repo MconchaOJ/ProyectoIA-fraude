@@ -92,3 +92,11 @@ Formato por entrada definido en `CLAUDE.md`, sección 8.
 - **Verificación hecha por el equipo:** _(completar: abrir los diagramas en mermaid.live; en la app, mover el umbral y comprobar que FP de validación completa coinciden con la tabla de "Resultados del modelo")_
 - **Análisis crítico:** la observación de que el CSV de ejemplo subestimaba los FP fue del equipo; la IA la confirmó con datos (umbral 0,05: 1 FP en el ejemplo frente a 15 en validación completa, con el mismo TP). _(completar)_
 - **Qué modificó o decidió el equipo:** _(completar)_
+
+### Entrada 12 — 2026-11-07 — Claude Code
+- **Prompt (resumido):** crear `docs/guia_estudio.md` para preparar las preguntas individuales, basada solo en lo que hay en el repo (sin inventar), con resumen, flujo paso a paso, conceptos con nuestros números, tablas de resultados, recorrido por el código, interfaz, uso de IAG, limitaciones, 25 preguntas con responsable y glosario.
+- **Respuesta / qué entregó:** la guía, con números tomados de la ejecución del código y de `models/logistica_sin_balanceo.json`. Calculó además, ejecutando código, el Teorema de Bayes con los datos de validación (con umbral 0,5 da P(fraude | alerta) = 0,833, igual a la precisión medida) y las medianas de `Amount` sin duplicados (22,00 legítimas, 9,82 fraudes; 25 fraudes con monto 0). Marcó con ⏳ lo que no está hecho.
+- **Justificación del uso:** material de estudio para la defensa oral.
+- **Verificación hecha por el equipo:** _(completar: cada integrante revisa la sección de su responsabilidad contra el código y las salidas de los notebooks)_
+- **Análisis crítico:** la guía corrige un matiz del prompt: con umbral 0,1 la precisión no se mantiene igual, baja levemente (0,833 → 0,810). Afirmaciones para contrastar con fuentes: correlación de Pearson acotada con una clase desbalanceada, AUPRC vs ROC, determinismo de lbfgs, fecha del dataset (septiembre de 2013, según Kaggle). _(completar)_
+- **Qué modificó o decidió el equipo:** _(completar)_
