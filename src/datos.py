@@ -6,11 +6,12 @@ Uso:
     from src.datos import cargar_datos
     df = cargar_datos()            # carga y elimina duplicados (lo normal)
 
-La partición train/val/test se agregará en este mismo archivo (notebook 02_baseline).
+    X_train, X_val, X_test, y_train, y_val, y_test = particionar(df)
 """
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
-from src.config import COLUMNA_OBJETIVO, RUTA_CSV
+from src.config import COLUMNA_OBJETIVO, PROP_TEST, PROP_VAL, RANDOM_STATE, RUTA_CSV
 
 
 def resumen_clases(df: pd.DataFrame) -> dict:
@@ -69,3 +70,48 @@ def cargar_datos(ruta=RUTA_CSV, quitar_duplicados: bool = True, verbose: bool = 
     if quitar_duplicados:
         df = eliminar_duplicados(df, verbose=verbose)
     return df
+
+
+def particionar(df: pd.DataFrame):
+    """
+    Partición estratificada 70/15/15 (train/val/test) con semilla fija.
+
+    train_test_split solo divide en DOS partes, por eso se hace en dos pasos:
+      1) df -> train (70%) + temporal (30%)          test_size = PROP_VAL + PROP_TEST = 0.30
+      2) temporal -> val (15%) + test (15%)          test_size = PROP_TEST / 0.30 = 0.50
+         (la mitad del 30% es el 15% del total)
+
+    stratify=y en AMBOS pasos: así cada conjunto conserva la misma proporción de fraudes (~0,167%).
+    Sin estratificar, con solo 473 fraudes, val o test podrían quedar con bastantes menos fraudes
+    por azar y las métricas serían poco confiables.
+
+    Devuelve X_train, X_val, X_test, y_train, y_val, y_test.
+    """
+    X = df.drop(columns=COLUMNA_OBJETIVO)
+    y = df[COLUMNA_OBJETIVO]
+
+    prop_temporal = PROP_VAL + PROP_TEST  # 0.30
+    X_train, X_temp, y_train, y_temp = train_test_split(
+        X, y, test_size=prop_temporal, stratify=y, random_state=RANDOM_STATE
+    )
+
+    prop_test_en_temporal = PROP_TEST / prop_temporal  # 0.15 / 0.30 = 0.50
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_temp, y_temp, test_size=prop_test_en_temporal, stratify=y_temp, random_state=RANDOM_STATE
+    )
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+def tabla_particion(y_train, y_val, y_test) -> pd.DataFrame:
+    """Tabla con filas, fraudes, % de fraude y % del total de cada conjunto (para verificar la estratificación)."""
+    total = len(y_train) + len(y_val) + len(y_test)
+    filas = []
+    for nombre, y in [("train", y_train), ("val", y_val), ("test", y_test)]:
+        filas.append({
+            "conjunto": nombre,
+            "filas": len(y),
+            "% del total": round(100 * len(y) / total, 2),
+            "fraudes": int(y.sum()),
+            "% fraude": round(100 * y.mean(), 4),
+        })
+    return pd.DataFrame(filas)

@@ -68,3 +68,11 @@ Formato por entrada definido en `CLAUDE.md`, sección 8.
 - **Verificación hecha por el equipo:** _(completar: Daniel ejecuta el notebook y comprueba 1.081 duplicados = 1.062 legítimas + 19 fraudes; 283.726 filas y 473 fraudes después)_
 - **Análisis crítico:** la decisión de eliminar duplicados fue del equipo; la IA la implementó. Supuesto a revisar: tratar las copias como errores de registro y no como transacciones reales repetidas. Verificar la afirmación de que la correlación de Pearson con una clase muy desbalanceada queda acotada.
 - **Qué modificó o decidió el equipo:** _(completar)_
+
+### Entrada 9 — 2026-11-07 — Claude Code
+- **Prompt (resumido):** crear `02_baseline.ipynb` (formato qué/por qué → código → preguntas): partición estratificada 70/15/15 en `src/datos.py`, funciones de métricas y curva PR en `src/evaluacion.py`, Dummy `most_frequent` y regresión logística sin balanceo con `StandardScaler` en pipeline, evaluación solo en validación, tabla CSV, figuras y tiempo de entrenamiento; interpretación como TODO.
+- **Respuesta / qué entregó:** `particionar()` y `tabla_particion()`; `evaluar()` (AUPRC, precisión, recall, F1, accuracy, matriz), `graficar_curva_pr()` con la línea del azar = proporción de fraudes y `graficar_matriz_confusion()`; notebook con explicación de la partición en dos pasos, de por qué la AUPRC aleatoria = prevalencia (comprobado empíricamente con puntajes al azar), de los hiperparámetros (lbfgs, C=1,0, max_iter=1000) y del escalado dentro del pipeline.
+- **Justificación del uso:** apoyo técnico y explicación de conceptos no vistos en clases (regresión logística, AUPRC).
+- **Verificación hecha por el equipo:** _(completar: ejecutar el notebook; comprobar que la partición suma 283.726 filas y 473 fraudes, que el % de fraude es ≈ igual en los tres conjuntos y que el ejemplo pequeño de `evaluar()` da los valores calculados a mano)_
+- **Análisis crítico:** _(completar)_. Puntos a revisar: la explicación de AUPRC vs ROC-AUC (contrastar con la documentación de scikit-learn), y que lbfgs sea determinista (por eso no se fijó `random_state`).
+- **Qué modificó o decidió el equipo:** _(completar)_

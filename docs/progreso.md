@@ -21,6 +21,7 @@
 
 ### Decisiones tomadas
 - **Duplicados eliminados antes de la partición** (evita fuga train→test). De las 1.081 copias, 1.062 son legítimas y 19 fraudes; no hay copias con etiqueta contradictoria. Dataset final: **283.726 filas, 473 fraudes (0,167 %)**. Implementado en `src/datos.py` (`cargar_datos()` lo aplica por defecto; `eliminar_duplicados()`, `resumen_clases()`).
+- Módulos compartidos: `src/datos.py` (`cargar_datos`, `particionar`, `tabla_particion`) y `src/evaluacion.py` (`evaluar`, `graficar_curva_pr`, `graficar_matriz_confusion`). Puntaje de riesgo = `predict_proba[:, 1]` (Isolation Forest: `-score_samples`).
 - Git lo maneja Maximiliano: Claude Code no hace commits.
 
 ### Pendiente inmediato
@@ -32,17 +33,19 @@
 ### Checklist Avance 1
 - [ ] Diagrama de flujo (CSV → preprocesamiento → modelo → puntaje → umbral → aprobar/alertar + métricas)
 - [~] `notebooks/01_exploracion.ipynb`: creado (8 secciones: qué/por qué → código → preguntas de exposición). Verificado que corre sin errores. **Falta:** que Daniel lo ejecute (genera las figuras en `docs/capturas/`) y escriba las interpretaciones/conclusiones marcadas TODO.
-- [ ] `notebooks/02_baseline.ipynb`: partición 70/15/15 estratificada, Dummy + regresión logística sin balanceo (AUPRC, precisión, recall, matriz de confusión, accuracy)
+- [~] `notebooks/02_baseline.ipynb`: creado y verificado que corre (secciones qué/por qué → código → preguntas). Genera `docs/resultados_baseline_val.csv`, `docs/capturas/02_matriz_dummy_val.png`, `02_matriz_logistica_val.png`, `02_curva_pr_val.png`. **Falta:** que el equipo lo ejecute y escriba la interpretación (sección 6, TODO).
+  - Resultados de la ejecución de prueba (validación, umbral 0,5): Dummy → accuracy 0,9983, recall 0, AUPRC 0,0017. Regresión logística sin balanceo → AUPRC 0,688, precisión 0,833, recall 0,493 (35 de 71 fraudes; FP 7, FN 36), accuracy 0,9990, entrenamiento ≈ 0,3 s (16 iteraciones de lbfgs).
 - [ ] Capturas/logs de las primeras pruebas
-- [ ] Documentación del entrenamiento (hiperparámetros, partición, resultados preliminares)
+- [~] Documentación del entrenamiento: partición (train 198.608 / 331 fraudes; val 42.559 / 71; test 42.559 / 71; % fraude ≈ 0,167 % en los tres) e hiperparámetros (lbfgs, C=1,0, max_iter=1000) documentados en el notebook 02. Falta pasarlo al PDF del avance.
 - [ ] Borrador de `app/app.py` (Streamlit)
 - [ ] Registro IAG al día
 
 ---
 
 ## Próximo paso sugerido
-1. Daniel ejecuta y completa los TODO de `01_exploracion.ipynb`.
-2. `notebooks/02_baseline.ipynb`: agregar la partición estratificada 70/15/15 a `src/datos.py`, Dummy + regresión logística sin balanceo.
+1. Equipo ejecuta y completa los TODO de `01_exploracion.ipynb` y `02_baseline.ipynb`.
+2. Guardar el modelo baseline con joblib en `models/` y hacer el borrador de `app/app.py` (Streamlit).
+3. Diagrama de flujo.
 
 ---
 
@@ -50,3 +53,4 @@
 - **2026-11-07:** lectura de `CLAUDE.md`; estructura del repo, `.gitignore`, `config.py`, `descargar_datos.py`, `requirements.txt`, `registro_iag.md` y este archivo.
 - **2026-11-07 (cont.):** entorno instalado y versiones fijadas; dataset descargado y verificado; `README.md`.
 - **2026-11-07 (cont. 2):** `src/datos.py` (carga + eliminación de duplicados) y `notebooks/01_exploracion.ipynb`.
+- **2026-11-07 (cont. 3):** partición en `src/datos.py`, `src/evaluacion.py` y `notebooks/02_baseline.ipynb`.
