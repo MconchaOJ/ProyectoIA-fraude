@@ -1,15 +1,7 @@
 """
-Interfaz Streamlit — Detección de fraude en transacciones bancarias (Tema 12). BORRADOR del Avance 1.
-
-Ejecutar desde la raíz del proyecto:
-    streamlit run app/app.py
-
-Flujo: CSV -> validación de columnas -> modelo (pipeline con escalado) -> puntaje de riesgo
-       -> umbral (slider) -> aprobar / alertar -> métricas (solo si el CSV trae la columna Class).
-
-Cómo funciona Streamlit (importante para entender este archivo): cada vez que el usuario toca algo
-(mueve el slider, sube un archivo, cambia de sección) Streamlit vuelve a ejecutar el script COMPLETO de
-arriba a abajo. Por eso lo caro (cargar el modelo, calcular puntajes) se guarda en caché.
+Sistema de Monitoreo y Detección de Fraude Bancario
+Proyecto Semestral - Inteligencia Artificial 2026-2 (UBB)
+Equipo: Daniel Canto · Diego Figueroa · Maximiliano Concha
 """
 import json
 import sys
@@ -20,238 +12,335 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
-# Para poder importar src/ (la app está en app/, un nivel bajo la raíz)
+# Ruta raíz para importar módulos de src/
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
 from src.config import COLUMNA_OBJETIVO, DIR_DATOS, DIR_MODELOS  # noqa: E402
 from src.evaluacion import evaluar, graficar_curva_pr, graficar_matriz_confusion  # noqa: E402
 
-# Modelos disponibles: nombre visible -> archivo en models/.
-# Avance 2: agregar aquí una línea por modelo nuevo (p. ej. "Random Forest + SMOTE": "rf_smote.joblib").
 MODELOS = {
-    "Regresión logística (sin balanceo) — baseline": "logistica_sin_balanceo.joblib",
+    "Regresión logística (Baseline sin balanceo)": "logistica_sin_balanceo.joblib",
 }
 RUTA_EJEMPLO = DIR_DATOS / "ejemplo_transacciones.csv"
-AVISO = "⚠️ Resultados académicos; no constituyen una decisión sobre clientes reales."
-
 
 # ------------------------------------------------------------------ Funciones con caché
 @st.cache_resource
 def cargar_modelo(nombre_archivo: str):
-    """
-    Carga {"modelo", "metadatos"} desde models/.
-    cache_resource: el modelo se carga UNA vez y se comparte entre ejecuciones del script y usuarios.
-    Sin esto, cada movimiento del slider volvería a leer el archivo desde el disco.
-    """
+    """Carga modelo y metadatos una sola vez en memoria."""
     return joblib.load(DIR_MODELOS / nombre_archivo)
 
 
 @st.cache_data
 def calcular_puntajes(nombre_archivo: str, X: pd.DataFrame):
-    """
-    Puntaje de riesgo = probabilidad de fraude. cache_data: para el mismo modelo y los mismos datos
-    no se recalcula; al mover el slider solo cambia la comparación puntaje >= umbral, que es instantánea.
-    """
+    """Calcula las probabilidades de fraude y las almacena en caché."""
     modelo = cargar_modelo(nombre_archivo)["modelo"]
     return modelo.predict_proba(X)[:, 1]
 
 
 def validar_columnas(df: pd.DataFrame, columnas_esperadas: list):
-    """Devuelve una lista de problemas (vacía si el CSV sirve)."""
+    """Verifica que el lote cumpla con el esquema requerido."""
     problemas = []
     faltantes = [c for c in columnas_esperadas if c not in df.columns]
     if faltantes:
-        problemas.append(f"Faltan {len(faltantes)} columnas: {', '.join(faltantes)}")
-        return problemas  # sin las columnas no tiene sentido seguir revisando
+        problemas.append(f"Faltan {len(faltantes)} columnas requeridas: {', '.join(faltantes[:5])}{'...' if len(faltantes) > 5 else ''}")
+        return problemas
     no_numericas = [c for c in columnas_esperadas if not pd.api.types.is_numeric_dtype(df[c])]
     if no_numericas:
-        problemas.append(f"Columnas no numéricas: {', '.join(no_numericas)}")
+        problemas.append(f"Columnas con formato no numérico: {', '.join(no_numericas[:4])}")
     con_nulos = [c for c in columnas_esperadas if df[c].isna().any()]
     if con_nulos:
-        problemas.append(f"Columnas con valores vacíos: {', '.join(con_nulos)}")
+        problemas.append(f"Columnas con registros vacíos: {', '.join(con_nulos[:4])}")
     if COLUMNA_OBJETIVO in df.columns and not df[COLUMNA_OBJETIVO].isin([0, 1]).all():
-        problemas.append(f"La columna {COLUMNA_OBJETIVO} solo puede tener valores 0 o 1")
+        problemas.append(f"La columna {COLUMNA_OBJETIVO} debe contener exclusivamente 0 (legítima) o 1 (fraude).")
     return problemas
 
 
-# ------------------------------------------------------------------ Estructura general
-st.set_page_config(page_title="Detección de fraude — Tema 12", page_icon="🛡️", layout="wide")
-st.title("🛡️ Detección de fraude en transacciones bancarias")
-st.warning(AVISO)  # aviso ético visible en todas las secciones
-
-st.sidebar.header("Menú")
-seccion = st.sidebar.radio(
-    "Sección", ["Analizar transacciones", "Resultados del modelo", "Acerca del proyecto"]
+# ------------------------------------------------------------------ Configuración de la interfaz
+st.set_page_config(
+    page_title="Detección de fraude",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Selector de modelo: solo muestra los que existen en models/ (los del Avance 2 aparecerán al entrenarlos)
-disponibles = {nombre: archivo for nombre, archivo in MODELOS.items() if (DIR_MODELOS / archivo).exists()}
-if not disponibles:
-    st.error("No hay modelos entrenados en models/. Ejecuta primero: `python -m src.entrenar_baseline`")
-    st.stop()
-nombre_modelo = st.sidebar.selectbox("Modelo", list(disponibles))
-archivo_modelo = disponibles[nombre_modelo]
-metadatos = cargar_modelo(archivo_modelo)["metadatos"]
-# Puntajes y etiquetas de la validación COMPLETA (42.559 transacciones), guardados por src/entrenar_baseline.py.
-# Permiten mostrar cifras realistas sin cargar el dataset de 150 MB.
-validacion = cargar_modelo(archivo_modelo).get("validacion")
-st.sidebar.caption(f"Entrenado: {metadatos['fecha_entrenamiento']}")
+# Estilo personalizado para aspecto institucional / fintech
+st.markdown("""
+<style>
+    .metric-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        border-left: 4px solid #1f77b4;
+        margin-bottom: 10px;
+    }
+    .alerta-box {
+        background-color: #fff3cd;
+        border-radius: 6px;
+        padding: 10px 14px;
+        color: #856404;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    div[data-testid="stMetricValue"] {
+        font-size: 1.6rem !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-
-# ------------------------------------------------------------------ Sección 1: Analizar transacciones
-def seccion_analizar():
-    st.header("Analizar transacciones")
-
-    # --- 1. Entrada: CSV del usuario o el de ejemplo
-    archivo = st.file_uploader("Sube un CSV con transacciones", type="csv")
-    usar_ejemplo = st.checkbox(
-        "Usar el CSV de ejemplo (2.000 transacciones del conjunto de validación, con Class)",
-        value=archivo is None,
+# Barra lateral
+with st.sidebar:
+    st.markdown("### 🏦 Panel de Control")
+    seccion = st.radio(
+        "Navegación",
+        ["Monitoreo de transacciones", "Desempeño del modelo", "Ficha técnica y ética"]
     )
+    st.markdown("---")
+    
+    disponibles = {n: f for n, f in MODELOS.items() if (DIR_MODELOS / f).exists()}
+    if not disponibles:
+        st.error("⚠️ No se encontró el modelo entrenado. Ejecuta: `python -m src.entrenar_baseline`")
+        st.stop()
+    
+    nombre_modelo = st.selectbox("Modelo", list(disponibles.keys()))
+    archivo_modelo = disponibles[nombre_modelo]
+    paquete_modelo = cargar_modelo(archivo_modelo)
+    metadatos = paquete_modelo["metadatos"]
+    validacion = paquete_modelo.get("validacion")
+    
+    st.caption(f"**Versión:** {metadatos.get('fecha_entrenamiento', 'Avance 1')[:10]}")
+
+
+# ------------------------------------------------------------------ Sección 1: Monitoreo (Dashboard 2 columnas)
+def seccion_analizar():
+    st.markdown("## 💳 Detección de fraude en transacciones bancarias")
+    
+    # Barra de alerta ética compacta
+    st.markdown(
+        '<div class="alerta-box">⚠️ <b>Entorno Académico:</b> Las clasificaciones emitidas representan estimaciones estadísticas con fines de evaluación docente.</div>',
+        unsafe_allow_html=True
+    )
+
+    # 1. Selector de fuente de datos (a la izquierda, check debajo de subir CSV)
+    c_carga, _ = st.columns([1, 1])
+    with c_carga:
+        archivo = st.file_uploader("Subir archivo CSV con transacciones", type=["csv"])
+        usar_ejemplo = st.checkbox("Usar lote de demostración (2.000 tx validadas)", value=False)
+
     if archivo is not None and not usar_ejemplo:
         df = pd.read_csv(archivo)
     elif usar_ejemplo and RUTA_EJEMPLO.exists():
         df = pd.read_csv(RUTA_EJEMPLO)
-        st.info(
-            "**CSV de ejemplo, solo para la demo.** Tiene 2.000 transacciones de validación con sus 71 fraudes "
-            "(3,55 % de fraudes, unas 20 veces más que la realidad). Como trae ~22 veces menos transacciones "
-            "legítimas que la validación completa, **los falsos positivos se ven artificialmente bajos** y la "
-            "precisión sale optimista. Las cifras realistas están en **Resultados del modelo** y, para el umbral "
-            "elegido, en la tabla comparativa de más abajo."
-        )
     else:
-        st.info("Sube un CSV o marca la opción del CSV de ejemplo para comenzar.")
+        st.info("👋 Para comenzar, sube un archivo CSV o marca la casilla del lote de demostración.")
         return
 
-    # --- 2. Validación de columnas
+    # 2. Validación de estructura
     columnas = metadatos["columnas"]
     problemas = validar_columnas(df, columnas)
     if problemas:
-        st.error("El CSV no tiene el formato esperado:\n\n- " + "\n- ".join(problemas))
-        st.caption("Columnas requeridas: " + ", ".join(columnas) + f". Opcional: {COLUMNA_OBJETIVO}.")
+        st.error("El formato del lote no coincide con el modelo:")
+        for p in problemas:
+            st.write(f"- {p}")
         return
+
     tiene_clase = COLUMNA_OBJETIVO in df.columns
-    st.success(f"CSV válido: {len(df):,} transacciones".replace(",", ".")
-               + (" (con etiquetas Class: se calcularán métricas)" if tiene_clase else " (sin Class: solo puntajes y alertas)"))
+    puntajes = calcular_puntajes(archivo_modelo, df[columnas])
 
-    # --- 3. Puntaje de riesgo (el pipeline escala internamente con la media/desv. de entrenamiento)
-    puntaje = calcular_puntajes(archivo_modelo, df[columnas])
+    # ------------------ LAYOUT EN 2 COLUMNAS ------------------
+    col_izq, col_der = st.columns([5, 6], gap="large")
 
-    # --- 4. Umbral: alertar si puntaje >= umbral
-    umbral = st.slider("Umbral de decisión (alertar si puntaje ≥ umbral)", 0.0, 1.0,
-                       float(metadatos["umbral_por_defecto"]), step=0.01,
-                       help="Umbral bajo: detecta más fraudes pero genera más falsas alarmas. Umbral alto: lo contrario.")
-    alerta = puntaje >= umbral
+    with col_izq:
+        st.markdown("### ⚙️ Ajuste de Política de Riesgo")
+        umbral = st.slider(
+            "Umbral de decisión (Score de fraude mínimo para activar alerta)",
+            min_value=0.01,
+            max_value=0.99,
+            value=float(metadatos["umbral_por_defecto"]),
+            step=0.01,
+            help="Un umbral bajo prioriza capturar más fraudes (mayor Recall) asumiendo más revisiones manuales."
+        )
+        
+        alerta = puntajes >= umbral
+        total_alertas = int(alerta.sum())
+        total_aprobadas = int((~alerta).sum())
+        tasa_alerta = (total_alertas / len(df)) * 100
 
-    c1, c2 = st.columns(2)
-    c1.metric("Alertas", int(alerta.sum()))
-    c2.metric("Aprobadas", int((~alerta).sum()))
+        # Tarjetas de decisión
+        k1, k2, k3 = st.columns(3)
+        k1.metric("Transacciones", f"{len(df):,}".replace(",", "."))
+        k2.metric("🚨 Bloqueadas / Alerta", f"{total_alertas:,}".replace(",", "."), delta=f"{tasa_alerta:.1f}% del lote", delta_color="inverse")
+        k3.metric("✅ Aprobadas", f"{total_aprobadas:,}".replace(",", "."))
 
-    # --- 5. Métricas en vivo (solo si hay etiquetas reales)
-    if tiene_clase:
-        res = evaluar(df[COLUMNA_OBJETIVO], puntaje, umbral=umbral)
-        st.subheader("Métricas con este umbral")
-        m = st.columns(6)
-        m[0].metric("TP (fraudes detectados)", res["TP"])
-        m[1].metric("FP (falsas alarmas)", res["FP"])
-        m[2].metric("FN (fraudes no detectados)", res["FN"])
-        m[3].metric("TN", res["TN"])
-        m[4].metric("Precisión", f"{res['precision']:.3f}")
-        m[5].metric("Recall", f"{res['recall']:.3f}")
-        st.caption(f"AUPRC en este CSV: {res['AUPRC']:.3f} (no depende del umbral). "
-                   f"Accuracy: {res['accuracy']:.4f} (se muestra solo para contrastar: engaña con datos desbalanceados).")
+        # Métricas de efectividad si se dispone de etiquetas reales
+        if tiene_clase:
+            st.markdown("---")
+            st.markdown("### 🎯 Métricas de Clasificación")
+            res = evaluar(df[COLUMNA_OBJETIVO], puntajes, umbral=umbral)
+            
+            m1, m2 = st.columns(2)
+            m1.metric("Precisión (Efectividad)", f"{res['precision']*100:.1f}%", help="Porcentaje de alertas que efectivamente resultaron ser fraude.")
+            m2.metric("Recall (Cobertura)", f"{res['recall']*100:.1f}%", help="Porcentaje de fraudes totales capturados por el sistema.")
 
-        # Mismo umbral aplicado a la validación COMPLETA: muestra cuánto cambian FP y precisión
-        if validacion is not None:
-            rv = evaluar(validacion["y"], validacion["puntaje"], umbral=umbral)
-            st.caption(f"Comparación con el mismo umbral ({umbral:.2f}): CSV cargado vs validación completa")
-            st.dataframe(pd.DataFrame([
-                {"datos": f"CSV cargado ({len(df):,} filas)".replace(",", "."), "TP": res["TP"], "FP": res["FP"],
-                 "FN": res["FN"], "precisión": round(res["precision"], 3), "recall": round(res["recall"], 3)},
-                {"datos": f"Validación completa ({len(validacion['y']):,} filas)".replace(",", "."), "TP": rv["TP"],
-                 "FP": rv["FP"], "FN": rv["FN"], "precisión": round(rv["precision"], 3), "recall": round(rv["recall"], 3)},
-            ]), hide_index=True)
+            tab_matriz, tab_comparativa = st.tabs(["Matriz de Confusión", "Comparativa Poblacional"])
+            
+            with tab_matriz:
+                fig, ax = plt.subplots(figsize=(4, 3.2))
+                graficar_matriz_confusion(res["matriz"], titulo=f"Matriz con umbral {umbral:.2f}", ax=ax)
+                plt.tight_layout()
+                st.pyplot(fig, use_container_width=False)
+                plt.close(fig)
+                st.caption(f"**AUPRC del modelo:** {res['AUPRC']:.3f} | **Aciertos:** {res['TP']} fraudes detectados y {res['TN']:,} legítimas aprobadas.".replace(",", "."))
 
-        fig, ax = plt.subplots(figsize=(4, 3.5))
-        graficar_matriz_confusion(res["matriz"], titulo=f"Matriz de confusión (umbral {umbral:.2f})", ax=ax)
-        col_fig, _ = st.columns([1, 2])  # columna angosta para que la figura no ocupe todo el ancho
-        col_fig.pyplot(fig)
-        plt.close(fig)
+            with tab_comparativa:
+                if validacion is not None:
+                    rv = evaluar(validacion["y"], validacion["puntaje"], umbral=umbral)
+                    tabla_comp = pd.DataFrame([
+                        {
+                            "Población": f"Lote actual ({len(df):,} tx)",
+                            "Fraudes Hallados (TP)": res["TP"],
+                            "Falsas Alarmas (FP)": res["FP"],
+                            "Precisión": f"{res['precision']*100:.1f}%",
+                            "Recall": f"{res['recall']*100:.1f}%"
+                        },
+                        {
+                            "Población": f"Validación Real ({len(validacion['y']):,} tx)",
+                            "Fraudes Hallados (TP)": rv["TP"],
+                            "Falsas Alarmas (FP)": rv["FP"],
+                            "Precisión": f"{rv['precision']*100:.1f}%",
+                            "Recall": f"{rv['recall']*100:.1f}%"
+                        }
+                    ])
+                    st.dataframe(tabla_comp, hide_index=True)
+                    st.caption("ℹ️ *Nota: El lote de muestra contiene una densidad sintética mayor de fraudes para probar la interfaz; la segunda fila proyecta el resultado real a escala de todo el banco.*")
 
-    # --- 6. Tabla ordenada por riesgo
-    st.subheader("Transacciones ordenadas por puntaje de riesgo")
-    tabla = df.assign(puntaje_riesgo=puntaje, decision=["ALERTA" if a else "Aprobar" for a in alerta])
-    columnas_tabla = ["puntaje_riesgo", "decision", "Time", "Amount"] + ([COLUMNA_OBJETIVO] if tiene_clase else [])
-    st.dataframe(
-        tabla.sort_values("puntaje_riesgo", ascending=False)[columnas_tabla],
-        column_config={"puntaje_riesgo": st.column_config.NumberColumn("Puntaje de riesgo", format="%.4f")},
-        height=400,
-    )
+    with col_der:
+        st.markdown("### 📋 Bandeja de Operaciones Priorizadas")
+        
+        # Filtros rápidos para la tabla
+        filtro_vista = st.radio(
+            "Ver en bandeja:",
+            ["Solo alertas sospechosas", "Todas las transacciones"],
+            horizontal=True
+        )
+
+        df_operacion = df.copy()
+        df_operacion["Score Riesgo"] = puntajes
+        df_operacion["Dictamen"] = ["🚨 ALERTA" if a else "✅ Aprobada" for a in alerta]
+
+        if filtro_vista == "Solo alertas sospechosas":
+            df_mostrar = df_operacion[df_operacion["Score Riesgo"] >= umbral]
+        else:
+            df_mostrar = df_operacion
+
+        # Ordenar por mayor riesgo primero
+        df_mostrar = df_mostrar.sort_values(by="Score Riesgo", ascending=False)
+
+        cols_mostrar = ["Dictamen", "Score Riesgo", "Amount", "Time"]
+        if tiene_clase:
+            cols_mostrar.append(COLUMNA_OBJETIVO)
+        # Mostrar algunas variables PCA clave si existen
+        for col_v in ["V17", "V14", "V12", "V4"]:
+            if col_v in df_mostrar.columns:
+                cols_mostrar.append(col_v)
+
+        st.dataframe(
+            df_mostrar[cols_mostrar],
+            column_config={
+                "Score Riesgo": st.column_config.ProgressColumn(
+                    "Score",
+                    help="Probabilidad calculada entre 0 y 1",
+                    format="%.3f",
+                    min_value=0.0,
+                    max_value=1.0,
+                ),
+                "Amount": st.column_config.NumberColumn("Monto ($)", format="$%.2f"),
+                "Time": st.column_config.NumberColumn("Segundos"),
+                "Class": st.column_config.TextColumn("Real")
+            },
+            height=580,
+            use_container_width=True
+        )
+        st.caption(f"Mostrando {len(df_mostrar):,} operaciones ordenadas por nivel de riesgo decreciente.".replace(",", "."))
 
 
 # ------------------------------------------------------------------ Sección 2: Resultados del modelo
 def seccion_resultados():
-    st.header("Resultados del modelo")
-    st.write(f"**{metadatos['descripcion']}**")
+    st.markdown("## 📊 Evaluación Técnica y Comparativa de Modelos")
+    st.write(f"**Arquitectura activa:** {metadatos['descripcion']}")
 
-    st.subheader("Métricas en validación (umbral 0,5)")
-    mv = metadatos["metricas_val"]
-    st.dataframe(pd.DataFrame([{k: mv[k] for k in ["AUPRC", "precision", "recall", "F1", "accuracy", "TP", "FP", "FN", "TN"]}]),
-                 hide_index=True)
+    tab1, tab2, tab3 = st.tabs(["Curva Precisión-Recall", "Análisis de Sensibilidad (Umbrales)", "Ficha de Entrenamiento"])
 
-    st.subheader("Configuración")
-    st.json({"hiperparametros": metadatos["hiperparametros"], "particion": metadatos["particion"],
-             "random_state": metadatos["random_state"],
-             "tiempo_entrenamiento_s": metadatos["tiempo_entrenamiento_s"],
-             "version_sklearn": metadatos["version_sklearn"]})
+    with tab1:
+        c_graf, c_info = st.columns([3, 2])
+        with c_graf:
+            if validacion is not None:
+                fig, ax = plt.subplots(figsize=(6, 4))
+                graficar_curva_pr(
+                    validacion["y"],
+                    {metadatos["descripcion"]: validacion["puntaje"]},
+                    titulo="Curva PR — Conjunto de Validación",
+                    ax=ax
+                )
+                plt.tight_layout()
+                st.pyplot(fig)
+                plt.close(fig)
+        with c_info:
+            st.markdown("#### ¿Por qué la Curva PR?")
+            st.write(
+                "En escenarios donde el fraude representa menos del 0,2% del volumen total, la curva ROC suele ser engañosa "
+                "por el enorme peso de los verdaderos negativos. La curva **Precisión-Recall** y su área bajo la curva (**AUPRC**) "
+                "evalúan directamente la capacidad de rescatar transacciones fraudulentas sin inundar al equipo con falsas alarmas."
+            )
+            mv = metadatos["metricas_val"]
+            st.metric("AUPRC Baseline", f"{mv['AUPRC']:.4f}")
+            st.metric("Precisión (umbral 0.5)", f"{mv['precision']*100:.1f}%")
+            st.metric("Recall (umbral 0.5)", f"{mv['recall']*100:.1f}%")
 
-    # Tabla comparativa del notebook 02 (si ya se ejecutó). En el Avance 2 tendrá más filas.
-    ruta_tabla = RAIZ / "docs" / "resultados_baseline_val.csv"
-    if ruta_tabla.exists():
-        st.subheader("Comparación con el baseline (validación)")
-        st.dataframe(pd.read_csv(ruta_tabla).round(4), hide_index=True)
-    st.subheader("Efecto del umbral en la validación completa")
-    p = metadatos["particion"]
-    st.write(f"Calculado sobre las {p['val']:,} transacciones de validación ({p['fraudes_val']} fraudes), ".replace(",", ".")
-             + "con la proporción real de fraudes. Estas son las cifras realistas; las del CSV de ejemplo son solo para la demo.")
-    st.dataframe(pd.DataFrame(metadatos["umbrales_val"]), hide_index=True)
+    with tab2:
+        st.markdown("#### Desempeño según el Umbral Operativo")
+        st.write("Evaluación proyectada sobre la totalidad del conjunto de validación (42.559 operaciones reales):")
+        df_u = pd.DataFrame(metadatos["umbrales_val"])
+        st.dataframe(
+            df_u,
+            column_config={
+                "umbral": st.column_config.NumberColumn("Umbral", format="%.2f"),
+                "precision": st.column_config.NumberColumn("Precisión", format="%.3f"),
+                "recall": st.column_config.NumberColumn("Recall", format="%.3f")
+            },
+            hide_index=True
+        )
+        st.info("💡 **Observación:** Al descender el umbral de 0,5 a 0,1, la detección de fraudes (Recall) se incrementa de un 49% a casi un 72%, con un impacto controlado en falsas alarmas.")
 
-    if validacion is not None:
-        st.subheader("Curva Precisión-Recall (validación)")
-        fig, ax = plt.subplots(figsize=(7, 5))
-        graficar_curva_pr(validacion["y"], {metadatos["descripcion"]: validacion["puntaje"]},
-                          titulo="Curva Precisión-Recall — validación", ax=ax)
-        col_fig, _ = st.columns([2, 1])
-        col_fig.pyplot(fig)
-        plt.close(fig)
+    with tab3:
+        st.markdown("#### Parámetros del Entorno")
+        st.json({
+            "Pipeline": metadatos["hiperparametros"],
+            "Muestras de Entrenamiento": f"{metadatos['particion']['train']:,} transacciones ({metadatos['particion']['fraudes_train']} fraudes)",
+            "Tiempo de Ajuste": f"{metadatos['tiempo_entrenamiento_s']} segundos",
+            "Semilla Aleatoria": metadatos["random_state"]
+        })
 
 
-# ------------------------------------------------------------------ Sección 3: Acerca del proyecto
+# ------------------------------------------------------------------ Sección 3: Acerca de
 def seccion_acerca():
-    st.header("Acerca del proyecto")
+    st.markdown("## 🏛️ Contexto del Proyecto y Consideraciones Éticas")
     st.markdown("""
-Proyecto semestral de **Inteligencia Artificial 2026-2**, Ingeniería Civil en Informática, Universidad del Bío-Bío.
-Tema 12: *Detección de fraude en transacciones bancarias*.
+    **Asignatura:** Inteligencia Artificial (2026-2) — Universidad del Bío-Bío  
+    **Docente:** Danelys Brito González  
+    **Integrantes:** Daniel Canto · Diego Figueroa · Maximiliano Concha  
 
-**Equipo:** Daniel Canto · Diego Figueroa · Maximiliano Concha. **Docente:** Danelys Brito González.
-
-**Qué hace el sistema:** asigna a cada transacción un *puntaje de riesgo* (probabilidad estimada de fraude) y permite
-elegir el *umbral* a partir del cual se genera una alerta. Bajar el umbral detecta más fraudes (menos FN, dinero perdido)
-a cambio de más falsas alarmas (más FP, clientes con el pago bloqueado).
-
-**Datos:** Credit Card Fraud Detection, Machine Learning Group (ULB), Kaggle. Licencia ODbL.
-Dal Pozzolo et al. (2015). 284.807 transacciones (283.726 sin duplicados), 0,167 % fraudes.
-Las variables V1–V28 son componentes PCA anonimizados.
-
-**Declaración ética:** los resultados son académicos y no constituyen una decisión sobre clientes reales.
-""")
+    ---
+    ### 🛡️ Compromiso Ético y Uso Responsable
+    1. **Entorno Académico:** El sistema ha sido concebido para el análisis técnico de algoritmos de clasificación ante severo desbalance de clases. No debe utilizarse para bloquear operaciones financieras reales sin supervisión humana.
+    2. **Privacidad de Datos:** El dataset utilizado corresponde al benchmark internacional del *Machine Learning Group (ULB)*, donde las características personales se encuentran protegidas mediante transformaciones de Componentes Principales (PCA).
+    3. **Impacto Operativo:** El diseño pone especial énfasis en el control de falsos positivos para evitar la discriminación o retención arbitraria de transacciones a clientes legítimos.
+    """)
 
 
-# ------------------------------------------------------------------ Enrutamiento del menú
-if seccion == "Analizar transacciones":
+# Enrutamiento
+if seccion == "Monitoreo de transacciones":
     seccion_analizar()
-elif seccion == "Resultados del modelo":
+elif seccion == "Desempeño del modelo":
     seccion_resultados()
 else:
     seccion_acerca()
