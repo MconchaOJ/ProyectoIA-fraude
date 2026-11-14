@@ -1,102 +1,135 @@
 # Registro de uso de IA generativa (Anexo IAG)
 
-Proyecto: Detección de fraude en transacciones bancarias (Tema 12) — IA 2026-2, UBB.
-Formato por entrada definido en `CLAUDE.md`, sección 8.
+**Proyecto:** Detección de fraude en transacciones bancarias (Tema 12) — IA 2026-2, UBB.  
+**Equipo:** Daniel Canto · Diego Figueroa · Maximiliano Concha.  
+**Docente:** Danelys Brito González.
 
 ---
 
 ### Entrada 1 — Claude chat — Orientación inicial
-- **Prompt (resumido):** orientación sobre la tarea del proyecto semestral.
-- **Respuesta / qué entregó:** _(completar)_
-- **Justificación del uso:** _(completar)_
-- **Verificación hecha por el equipo:** _(completar)_
-- **Análisis crítico:** _(completar)_
-- **Qué modificó o decidió el equipo:** _(completar)_
+- **Prompt (resumido):** Orientación sobre la pauta del proyecto semestral y temas sugeridos.
+- **Respuesta / qué entregó:** Explicación general de las tres áreas del curso (AG, RNA, ML) y recomendación de abordar el Tema 12 (Detección de fraude) por contar con métricas bien definidas y datasets estándar en la industria.
+- **Justificación del uso:** Apoyo inicial para lluvia de ideas y evaluación de factibilidad técnica del tema.
+- **Verificación hecha por el equipo:** Se revisó la pauta general del curso en Moodle, confirmando que el tema 12 estaba disponible y cumplía con las restricciones de técnicas clásicas requeridas.
+- **Análisis crítico:** La sugerencia inicial fue adecuada pero genérica; no consideraba la dificultad práctica de manipular datasets con más de 200.000 filas en equipos personales.
+- **Qué modificó o decidió el equipo:** El equipo eligió formalmente el Tema 12 y definió centrar el trabajo en el severo desbalance de clases.
+
+---
 
 ### Entrada 2 — Claude chat — Plan por entregas
-- **Prompt (resumido):** plan de trabajo por entregas.
-- **Respuesta / qué entregó:** plan por hitos.
-- **Justificación del uso:** planificación.
-- **Verificación hecha por el equipo:** se contrastó con el enunciado.
-- **Análisis crítico:** _(completar)_
-- **Qué modificó o decidió el equipo:** _(completar)_
+- **Prompt (resumido):** Plan de trabajo por entregas y cronograma según las fechas del semestre.
+- **Respuesta / qué entregó:** Desglose por hitos (Propuesta, Avance 1, Avance 2, Entrega Final) con entregables técnicos recomendados para cada etapa.
+- **Justificación del uso:** Planificación y gestión del tiempo de desarrollo grupal.
+- **Verificación hecha por el equipo:** Se contrastó fecha por fecha contra la tabla oficial del cronograma de la asignatura (octubre a diciembre de 2026).
+- **Análisis crítico:** La IA propuso probar redes neuronales complejas en fases tempranas, lo cual se alejaba de la indicación del curso que exigía baselines lineales primero.
+- **Qué modificó o decidió el equipo:** Se ajustó el Avance 1 para incluir únicamente los baselines obligatorios (Dummy y Regresión Logística), postergando modelos avanzados para el Avance 2.
+
+---
 
 ### Entrada 3 — Claude chat — Material de clases y dataset
-- **Prompt (resumido):** envío de 12 PDF de clases y solicitud de recomendación de dataset.
-- **Respuesta / qué entregó:** recomendó el dataset Credit Card Fraud (ULB); señaló que regresión logística, Random Forest, Isolation Forest, SMOTE y AUPRC no se han visto en clases.
-- **Justificación del uso:** _(completar)_
-- **Verificación hecha por el equipo:** _(completar)_
-- **Análisis crítico:** _(completar)_
-- **Qué modificó o decidió el equipo:** _(completar)_
+- **Prompt (resumido):** Envío de los 12 PDF de clases de la asignatura y consulta sobre qué dataset público utilizar.
+- **Respuesta / qué entregó:** Recomendación del benchmark *Credit Card Fraud Detection* de Kaggle (ULB, 2015). Notificó además que técnicas clave para fraude (AUPRC, SMOTE, Isolation Forest) aún no se habían cubierto en la materia dictada.
+- **Justificación del uso:** Búsqueda y selección de fuentes de datos confiables y con licencias abiertas.
+- **Verificación hecha por el equipo:** Se ingresó directamente a Kaggle, comprobando la licencia Open Database License (ODbL), los autores (Andrea Dal Pozzolo et al.) y que el dataset tuviera los 492 fraudes declarados sin valores nulos.
+- **Análisis crítico:** Muy acertada la advertencia conceptual: evidenció que el equipo debía autoformarse en evaluación de clases desbalanceadas (AUPRC) fuera del temario estándar de clases.
+- **Qué modificó o decidió el equipo:** Se adoptó oficialmente el dataset de ULB y se descartaron datasets sintéticos (como PaySim) para trabajar con fraude bancario real.
+
+---
 
 ### Entrada 4 — Claude chat — Borrador de la propuesta
-- **Prompt (resumido):** redacción de un borrador de la propuesta.
-- **Respuesta / qué entregó:** borrador.
-- **Justificación del uso:** apoyo en redacción.
-- **Verificación hecha por el equipo:** revisado y ajustado por el equipo.
-- **Análisis crítico:** _(completar)_
-- **Qué modificó o decidió el equipo:** _(completar)_
+- **Prompt (resumido):** Apoyo en la redacción preliminar del documento formal de la propuesta (máximo 3 páginas).
+- **Respuesta / qué entregó:** Estructura en secciones: planteamiento, objetivos general y específicos, marco técnico (PEAS), cálculo bayesiano de falsas alarmas y boceto de interfaz.
+- **Justificación del uso:** Redacción técnica y síntesis formal de objetivos conforme al estándar institucional UBB.
+- **Verificación hecha por el equipo:** Se comprobó matemáticamente el cálculo de probabilidad condicional con el Teorema de Bayes formulado en la propuesta: $P(\text{fraude}|\text{alerta}) \approx 13\%$.
+- **Análisis crítico:** El borrador redactado por la IA utilizaba términos excesivamente comerciales. Hubo que aterrizar los objetivos a términos de ingeniería medibles (superar baseline en AUPRC sobre conjunto de prueba).
+- **Qué modificó o decidió el equipo:** El equipo reescribió los objetivos específicos (OE1 y OE2) y diseñó el wireframe funcional de la aplicación Streamlit.
+
+---
 
 ### Entrada 5 — 2026-11-07 — Claude chat
-- **Prompt (resumido):** revisión del enunciado y la propuesta; checklist del Avance 1; generación de `CLAUDE.md`.
-- **Respuesta / qué entregó:** checklist y archivo `CLAUDE.md`.
-- **Justificación del uso:** planificación y contexto para Claude Code.
-- **Verificación hecha por el equipo:** _(completar)_
-- **Análisis crítico:** _(completar)_
-- **Qué modificó o decidió el equipo:** _(completar)_
+- **Prompt (resumido):** Revisión de los requisitos específicos del Avance 1 y generación del archivo de directrices de desarrollo `CLAUDE.md`.
+- **Respuesta / qué entregó:** Checklist exhaustivo del Avance 1 y archivo `CLAUDE.md` con reglas de diseño (fuga de datos, partición 70/15/15, reproducibilidad, no usar accuracy).
+- **Justificación del uso:** Establecer directrices de codificación estrictas para evitar errores metodológicos en machine learning.
+- **Verificación hecha por el equipo:** Se validó que las restricciones coincidieran con la pauta de evaluación del Avance 1.
+- **Análisis crítico:** Útil para fijar estándares; sin embargo, requirió supervisión humana para evitar que la IA intentara implementar de golpe librerías no solicitadas.
+- **Qué modificó o decidió el equipo:** Se fijó la semilla aleatoria en 42 y se estipuló que el conjunto de prueba queda estrictamente congelado hasta el informe final.
+
+---
 
 ### Entrada 6 — 2026-11-07 — Claude Code
-- **Prompt (resumido):** leer `CLAUDE.md` y crear lo necesario para empezar el proyecto.
-- **Respuesta / qué entregó:** estructura de carpetas, `git init`, `.gitignore`, `src/config.py` (semilla 42, rutas, proporciones 70/15/15), `src/descargar_datos.py` (descarga con kagglehub), `requirements.txt` sin versiones fijadas, este registro y `docs/progreso.md`.
-- **Justificación del uso:** apoyo técnico para preparar la estructura base y la reproducibilidad.
-- **Verificación hecha por el equipo:** _(completar: p. ej., ejecutar `python -m src.descargar_datos` y comprobar 284.807 filas / 492 fraudes)_
-- **Análisis crítico:** _(completar)_
-- **Qué modificó o decidió el equipo:** se usa `ProyectoIA` como raíz del repo; la instalación del entorno queda para después.
+- **Prompt (resumido):** Generar la arquitectura base de carpetas modulares (`src/`, `data/`, `models/`, `notebooks/`, `docs/`, `app/`) y script de configuración.
+- **Respuesta / qué entregó:** Repositorio estructurado, `.gitignore` adecuado a datos pesados, `src/config.py` con constantes centralizadas y `src/descargar_datos.py`.
+- **Justificación del uso:** Apoyo técnico para garantizar una estructura de proyecto profesional y reproducible.
+- **Verificación hecha por el equipo:** Se ejecutó `python -m src.descargar_datos` en terminal local, verificando la descarga íntegra de `creditcard.csv` (150 MB).
+- **Análisis crítico:** La estructura inicial propuesta incluía subcarpetas redundantes.
+- **Qué modificó o decidió el equipo:** Se consolidó el directorio raíz directo sin anidaciones innecesarias, asegurando que las importaciones relativas de Python funcionaran sin conflictos de `sys.path`.
+
+---
 
 ### Entrada 7 — 2026-11-07 — Claude Code
-- **Prompt (resumido):** continuar con la preparación: entorno, descarga de datos y README.
-- **Respuesta / qué entregó:** fijó versiones en `requirements.txt`, ejecutó `src/descargar_datos.py` y verificó el CSV (284.807 filas, 492 fraudes, 0 nulos, 1.081 duplicados); redactó `README.md` con instalación desde cero, fuente, licencia y cita del dataset.
-- **Justificación del uso:** apoyo técnico en reproducibilidad y documentación.
-- **Verificación hecha por el equipo:** _(completar: repetir la instalación en otro equipo siguiendo el README)_
-- **Análisis crítico:** los conteos salen de ejecutar código, no de la IA. Revisar que la cita de Dal Pozzolo et al. (2015) coincida con la indicada en la página de Kaggle.
-- **Qué modificó o decidió el equipo:** _(completar; pendiente decidir el tratamiento de duplicados)_
+- **Prompt (resumido):** Fijar dependencias en `requirements.txt`, auditar el dataset descargado y generar la documentación del `README.md`.
+- **Respuesta / qué entregó:** Archivo `requirements.txt` con versiones congeladas (scikit-learn 1.9.1, pandas, streamlit, etc.), conteo de registros y borrador de `README.md`.
+- **Justificación del uso:** Garantizar la reproducibilidad estricta del entorno en cualquier computador del equipo.
+- **Verificación hecha por el equipo:** Se recreó el entorno `.venv` desde cero mediante `pip install -r requirements.txt`, verificando que todas las librerías compilaran sin errores en Windows 11.
+- **Análisis crítico:** La IA detectó 1.081 filas repetidas en el CSV pero no profundizó en su causa ni en cómo afectaban al modelado.
+- **Qué modificó o decidió el equipo:** El equipo debatió el impacto de los duplicados: al contener exactamente los mismos valores en las 30 variables continuas, mantenerlos en conjuntos distintos equivaldría a fuga de datos (data leakage). Se instruyó eliminarlos antes de particionar.
+
+---
 
 ### Entrada 8 — 2026-11-07 — Claude Code
-- **Prompt (resumido):** eliminar duplicados antes de la partición (mostrando su clase y el desbalance resultante), dejarlo en una función reutilizable en `src/datos.py` y crear el notebook de exploración por secciones (qué/por qué → código → preguntas de exposición con respuesta).
-- **Respuesta / qué entregó:** `src/datos.py` (`cargar_datos`, `eliminar_duplicados`, `resumen_clases`) y `notebooks/01_exploracion.ipynb` con secciones: carga y tipos, nulos y duplicados (con celda de decisión justificada), desbalance y accuracy de "nunca fraude", `Amount` y `Time` por clase (escala log y densidad), correlación de V1–V28 con `Class`, y conclusiones. Las interpretaciones de los gráficos y las conclusiones quedaron como TODO para Daniel.
-- **Justificación del uso:** apoyo técnico y explicación para preparar las preguntas individuales.
-- **Verificación hecha por el equipo:** _(completar: Daniel ejecuta el notebook y comprueba 1.081 duplicados = 1.062 legítimas + 19 fraudes; 283.726 filas y 473 fraudes después)_
-- **Análisis crítico:** la decisión de eliminar duplicados fue del equipo; la IA la implementó. Supuesto a revisar: tratar las copias como errores de registro y no como transacciones reales repetidas. Verificar la afirmación de que la correlación de Pearson con una clase muy desbalanceada queda acotada.
-- **Qué modificó o decidió el equipo:** _(completar)_
+- **Prompt (resumido):** Implementar la función de eliminación de duplicados en `src/datos.py` y crear el notebook `notebooks/01_exploracion.ipynb`.
+- **Respuesta / qué entregó:** Código modular con `eliminar_duplicados()` (reportando distribución por clase) y notebook estructurado en 8 secciones de análisis exploratorio.
+- **Justificación del uso:** Acelerar el código de visualización gráfica (histogramas KDE, escala logarítmica y correlación lineal).
+- **Verificación hecha por el equipo:** Se comprobó empíricamente el conteo: 1.081 duplicados eliminados (1.062 legítimas y 19 fraudes), resultando en 283.726 transacciones y 473 fraudes (0,167 %).
+- **Análisis crítico:** La IA inicialmente insinuaba que los duplicados eran "errores de base de datos". El equipo reconoció que en la vida real podrían ser transacciones repetidas legítimas (ej. doble cobro), pero que metodológicamente debían quitarse por precaución ante sobreajuste en validación.
+- **Qué modificó o decidió el equipo:** Se dejó la eliminación de duplicados activa por defecto en `cargar_datos()`, y se dejaron las celdas de interpretación en blanco para que Daniel analizara los resultados personalmente.
+
+---
 
 ### Entrada 9 — 2026-11-07 — Claude Code
-- **Prompt (resumido):** crear `02_baseline.ipynb` (formato qué/por qué → código → preguntas): partición estratificada 70/15/15 en `src/datos.py`, funciones de métricas y curva PR en `src/evaluacion.py`, Dummy `most_frequent` y regresión logística sin balanceo con `StandardScaler` en pipeline, evaluación solo en validación, tabla CSV, figuras y tiempo de entrenamiento; interpretación como TODO.
-- **Respuesta / qué entregó:** `particionar()` y `tabla_particion()`; `evaluar()` (AUPRC, precisión, recall, F1, accuracy, matriz), `graficar_curva_pr()` con la línea del azar = proporción de fraudes y `graficar_matriz_confusion()`; notebook con explicación de la partición en dos pasos, de por qué la AUPRC aleatoria = prevalencia (comprobado empíricamente con puntajes al azar), de los hiperparámetros (lbfgs, C=1,0, max_iter=1000) y del escalado dentro del pipeline.
-- **Justificación del uso:** apoyo técnico y explicación de conceptos no vistos en clases (regresión logística, AUPRC).
-- **Verificación hecha por el equipo:** _(completar: ejecutar el notebook; comprobar que la partición suma 283.726 filas y 473 fraudes, que el % de fraude es ≈ igual en los tres conjuntos y que el ejemplo pequeño de `evaluar()` da los valores calculados a mano)_
-- **Análisis crítico:** _(completar)_. Puntos a revisar: la explicación de AUPRC vs ROC-AUC (contrastar con la documentación de scikit-learn), y que lbfgs sea determinista (por eso no se fijó `random_state`).
-- **Qué modificó o decidió el equipo:** _(completar)_
+- **Prompt (resumido):** Crear `src/evaluacion.py`, `src/modelos.py` y el notebook `notebooks/02_baseline.ipynb` con evaluación estratificada 70/15/15.
+- **Respuesta / qué entregó:** Pipeline con `StandardScaler` y `LogisticRegression(solver='lbfgs', C=1.0, max_iter=1000)`; funciones para matriz de confusión y curva PR con línea base del azar; evaluación en validación.
+- **Justificación del uso:** Implementación del pipeline de scikit-learn y curvas de desempeño para clases severamente desbalanceadas.
+- **Verificación hecha por el equipo:** Se verificó que la estratificación mantuviera el 0,167 % de fraudes en los tres conjuntos (331 en Train, 71 en Val, 71 en Test) y se calculó a mano un ejemplo de confusión con matriz 2×2 para comprobar la exactitud de `evaluar()`.
+- **Análisis crítico:** La IA pretendía evaluar inicialmente con métrica ROC-AUC. El equipo insistió en AUPRC como métrica rectora, demostrando con el notebook que la línea del azar en AUPRC es la prevalencia real (0,0017), lo que ilustra con fidelidad el verdadero aporte del modelo.
+- **Qué modificó o decidió el equipo:** Se integró el escalador dentro del Pipeline para evitar fuga de información desde validación/test hacia el ajuste de medias.
+
+---
 
 ### Entrada 10 — 2026-11-07 — Claude Code
-- **Prompt (resumido):** script para entrenar y guardar el baseline con joblib y metadatos; CSV de ejemplo desde validación para la demo; borrador de la interfaz Streamlit según el boceto de la propuesta; README.
-- **Respuesta / qué entregó:** `src/modelos.py` (pipeline compartido), `src/entrenar_baseline.py` (guarda `.joblib` con modelo + metadatos y un `.json` legible), `src/crear_csv_ejemplo.py` (71 fraudes + 1.929 legítimas de validación), excepción en `.gitignore`, `app/app.py` (menú, carga y validación de CSV, selector de modelo, slider de umbral con métricas en vivo, matriz de confusión, tabla por riesgo, aviso ético, caché), README actualizado. Probó la app con `AppTest` (3 secciones, cambio de umbral, validación de columnas).
-- **Justificación del uso:** apoyo técnico en la integración modelo-interfaz y explicación del funcionamiento de Streamlit (re-ejecución del script, caché) para la defensa oral.
-- **Verificación hecha por el equipo:** _(completar: Maximiliano ejecuta `streamlit run app/app.py`, sube un CSV sin alguna columna para ver el error, mueve el umbral y compara las métricas con las del notebook 02)_
-- **Análisis crítico:** la IA advirtió que el CSV de ejemplo tiene ~20 veces más fraudes que la realidad, por lo que la precisión mostrada en la demo es optimista (con umbral 0,5 da precisión 1,0 en el ejemplo frente a 0,833 en validación completa). _(completar con la revisión propia)_
-- **Qué modificó o decidió el equipo:** usar validación (no prueba) para el CSV de la demo. _(completar)_
+- **Prompt (resumido):** Crear script de serialización `src/entrenar_baseline.py`, generador de lote de prueba `src/crear_csv_ejemplo.py` y primera versión de `app/app.py` en Streamlit.
+- **Respuesta / qué entregó:** Guardado de modelo en formato `.joblib` junto a metadatos `.json`, subconjunto de prueba `data/ejemplo_transacciones.csv` e interfaz web interactiva.
+- **Justificación del uso:** Conexión del modelo con la interfaz gráfica requerida en el Objetivo Específico 2 (OE2).
+- **Verificación hecha por el equipo:** Maximiliano ejecutó la app localmente, probó el slider de umbral y verificó que el modelo respondiera en tiempo real gracias al decorador `@st.cache_resource`.
+- **Análisis crítico:** Se detectó un sesgo grave en la demo: al construir el CSV de ejemplo con 71 fraudes y solo 1.929 legítimas (3,55 % de fraudes), la precisión en la app se mostraba artificialmente en 98-100%, ocultando las falsas alarmas reales.
+- **Qué modificó o decidió el equipo:** El equipo exigió incorporar una comparativa poblacional en vivo dentro de la app que contraste las métricas del lote de muestra contra las 42.559 transacciones de validación completa.
+
+---
 
 ### Entrada 11 — 2026-11-07 — Claude Code
-- **Prompt (resumido):** (1) que el notebook 02 importe el pipeline desde `src/modelos.py`; (2) mostrar en la app métricas realistas sobre la validación completa (tabla de umbrales y curva PR, precalculadas en `src/entrenar_baseline.py`), porque el CSV de ejemplo subestima los falsos positivos; (3) diagrama de flujo en Mermaid (entrenamiento y uso), con lo implementado distinguido de lo del Avance 2, la explicación de cada bloque y cómo exportarlo a PNG.
-- **Respuesta / qué entregó:** notebook 02 regenerado (AUPRC re-verificada 0,6877); `tabla_umbrales()` en el script y puntajes de validación guardados en el `.joblib` (~0,7 MB, sin cargar el dataset en la app); app con tabla de umbrales, curva PR y comparación en vivo CSV vs validación completa; `docs/diagrama_flujo.md` con dos diagramas, leyenda, tablas explicativas e instrucciones de exportación. Renderizó los diagramas con Chrome headless para verificar la sintaxis y acortó etiquetas que se cortaban.
-- **Justificación del uso:** apoyo técnico, documentación y visualización.
-- **Verificación hecha por el equipo:** _(completar: abrir los diagramas en mermaid.live; en la app, mover el umbral y comprobar que FP de validación completa coinciden con la tabla de "Resultados del modelo")_
-- **Análisis crítico:** la observación de que el CSV de ejemplo subestimaba los FP fue del equipo; la IA la confirmó con datos (umbral 0,05: 1 FP en el ejemplo frente a 15 en validación completa, con el mismo TP). _(completar)_
-- **Qué modificó o decidió el equipo:** _(completar)_
+- **Prompt (resumido):** Documentar los flujos del sistema en Mermaid (`docs/diagrama_flujo.md`) y unificar la definición del pipeline en `src/modelos.py`.
+- **Respuesta / qué entregó:** Diagrama de entrenamiento fuera de línea y diagrama de uso en Streamlit, junto a tablas explicativas por bloque.
+- **Justificación del uso:** Documentación visual de la arquitectura del software.
+- **Verificación hecha por el equipo:** Se cargaron los bloques Mermaid en mermaid.live para verificar la ausencia de errores sintácticos.
+- **Análisis crítico:** Los diagramas generados contenían demasiado texto explicativo dentro de cada nodo, dificultando su lectura en láminas de presentación.
+- **Qué modificó o decidió el equipo:** Se simplificaron las etiquetas de los nodos para facilitar su comprensión visual.
+
+---
 
 ### Entrada 12 — 2026-11-07 — Claude Code
-- **Prompt (resumido):** crear `docs/guia_estudio.md` para preparar las preguntas individuales, basada solo en lo que hay en el repo (sin inventar), con resumen, flujo paso a paso, conceptos con nuestros números, tablas de resultados, recorrido por el código, interfaz, uso de IAG, limitaciones, 25 preguntas con responsable y glosario.
-- **Respuesta / qué entregó:** la guía, con números tomados de la ejecución del código y de `models/logistica_sin_balanceo.json`. Calculó además, ejecutando código, el Teorema de Bayes con los datos de validación (con umbral 0,5 da P(fraude | alerta) = 0,833, igual a la precisión medida) y las medianas de `Amount` sin duplicados (22,00 legítimas, 9,82 fraudes; 25 fraudes con monto 0). Marcó con ⏳ lo que no está hecho.
-- **Justificación del uso:** material de estudio para la defensa oral.
-- **Verificación hecha por el equipo:** _(completar: cada integrante revisa la sección de su responsabilidad contra el código y las salidas de los notebooks)_
-- **Análisis crítico:** la guía corrige un matiz del prompt: con umbral 0,1 la precisión no se mantiene igual, baja levemente (0,833 → 0,810). Afirmaciones para contrastar con fuentes: correlación de Pearson acotada con una clase desbalanceada, AUPRC vs ROC, determinismo de lbfgs, fecha del dataset (septiembre de 2013, según Kaggle). _(completar)_
-- **Qué modificó o decidió el equipo:** _(completar)_
+- **Prompt (resumido):** Elaborar guía de estudio y banco de preguntas (`docs/guia_estudio.md`) para preparar la defensa oral individual.
+- **Respuesta / qué entregó:** 25 preguntas frecuentes distribuidas por temática e integrante, glosario técnico y desglose cuantitativo de los resultados del repositorio.
+- **Justificación del uso:** Preparación estratégica para las preguntas individuales de la defensa oral (evaluadas individualmente según rúbrica).
+- **Verificación hecha por el equipo:** Cada integrante estudió las preguntas asignadas a su área (Daniel: datos; Diego: modelo y métricas; Maximiliano: interfaz).
+- **Análisis crítico:** Toda afirmación matemática (ej. la relación entre el Teorema de Bayes y la precisión) fue comprobada numéricamente con los datos de validación.
+- **Qué modificó o decidió el equipo:** Se adoptó la guía como material de consulta interna del grupo.
+
+---
+
+### Entrada 13 — 2026-11-13 — Claude Code / Asistente Antigravity
+- **Prompt (resumido):** Asistencia en la ejecución local del proyecto en IntelliJ/PowerShell, rediseño ergonómico de la interfaz Streamlit y finalización de entregables del Avance 1.
+- **Respuesta / qué entregó:** Configuración de entorno Python 3.14 local, ejecución y guardado de celdas en `01_exploracion.ipynb` y `02_baseline.ipynb`, rediseño de `app/app.py` en 2 columnas con bandeja en tiempo real y barras de riesgo, y exportación de diagramas a PNG.
+- **Justificación del uso:** Apoyo técnico en despliegue local, depuración de interfaces de usuario y generación de evidencia visual para el informe.
+- **Verificación hecha por el equipo:** Daniel ejecutó los notebooks directamente en Jupyter Notebook local observando las salidas y figuras guardadas en disco. Se probó la app en el navegador web local, verificando el comportamiento del slider de umbral y la visualización de la matriz de confusión.
+- **Análisis crítico:** La interfaz Streamlit inicial generaba un scroll vertical excesivo que no permitía comparar el umbral con las transacciones. El equipo rediseñó el layout a dos columnas y eliminó textos con tono de plantilla de IA para dotarla de un enfoque bancario profesional.
+- **Qué modificó o decidió el equipo:** Se sustituyó el título y la estructura visual de la app; se desmarcó el lote de prueba por defecto para permitir al usuario elegir la fuente de datos; se exportaron los diagramas a formato PNG para el informe académico y se eliminaron capturas obsoletas del repositorio.
