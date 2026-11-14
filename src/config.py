@@ -7,7 +7,7 @@ en un solo lugar, para garantizar la reproducibilidad (requisito del curso).
 from pathlib import Path
 
 # --- Reproducibilidad ---
-# Semilla única para particiones, modelos y SMOTE. Si se cambia aquí, cambia en todo el proyecto.
+# Semilla única para particiones y modelos. Si se cambia aquí, cambia en todo el proyecto.
 RANDOM_STATE = 42
 
 # --- Rutas ---
