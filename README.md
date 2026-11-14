@@ -49,8 +49,7 @@ Todos los comandos se ejecutan desde la raíz del proyecto, con el entorno activ
 | Baseline (análisis) | `notebooks/02_baseline.ipynb` |
 | Entrenar y guardar el modelo para la interfaz | `python -m src.entrenar_baseline` |
 | Regenerar el CSV de ejemplo de la demo | `python -m src.crear_csv_ejemplo` |
-| Modelos principales (Avance 2) | `notebooks/03_modelos.ipynb` |
-| Interfaz | `streamlit run app/app.py` |
+| Interfaz en Streamlit | `streamlit run app/app.py` |
 
 Los notebooks se abren con `jupyter notebook`.
 
@@ -80,7 +79,7 @@ mucho mayor que la real, la precisión que se ve en la demo es más alta que la 
 
 ```
 ├── data/          # creditcard.csv (no versionado) y ejemplo_transacciones.csv (demo)
-├── notebooks/     # exploración, baseline y modelos
+├── notebooks/     # exploración (01) y baseline (02)
 ├── src/
 │   ├── config.py           # semilla (RANDOM_STATE = 42), rutas y proporciones 70/15/15
 │   ├── descargar_datos.py  # descarga del dataset con kagglehub
@@ -99,4 +98,18 @@ mucho mayor que la real, la precisión que se ve en la demo es más alta que la 
 
 - Semilla única `RANDOM_STATE = 42` definida en `src/config.py`.
 - Partición estratificada 70/15/15 (train/val/test); el conjunto de prueba se usa una sola vez al final.
-- SMOTE y escalado se aplican dentro de un `Pipeline`, ajustados solo con entrenamiento.
+- El escalado se aplica dentro de un `Pipeline`, ajustado solo con entrenamiento para evitar fuga de información (*data leakage*).
+
+## Estado de Avances
+
+- **Avance 1:**
+  - Auditoría exploratoria y eliminación de 1.081 duplicados (`notebooks/01_exploracion.ipynb`).
+  - Partición estratificada y evaluación del baseline con AUPRC 0,688 (`notebooks/02_baseline.ipynb`).
+  - Pipeline de inferencia y serialización del modelo (`src/entrenar_baseline.py`).
+  - Prototipo funcional de la interfaz en Streamlit (`app/app.py`).
+  - Informe formal en PDF (`informe/`) y Anexo IAG completado (`docs/registro_iag.md`).
+
+- **Avance 2:**
+  - Implementación de `class_weight='balanced'` y sobremuestreo con SMOTE.
+  - Modelado no lineal (Random Forest) y detección no supervisada de anomalías (Isolation Forest) en `notebooks/03_modelos.ipynb`.
+  - Comparativa de desempeño contra el baseline y grabación de video demostrativo.
