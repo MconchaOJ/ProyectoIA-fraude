@@ -90,7 +90,7 @@ mucho mayor que la real, la precisión que se ve en la demo es más alta que la 
 │   └── crear_csv_ejemplo.py
 ├── models/        # modelos .joblib (no versionados) y sus metadatos .json
 ├── app/           # interfaz Streamlit
-├── docs/          # registro IAG, diagrama de flujo, capturas
+├── docs/          # registro IAG, métricas de validación y capturas
 └── informe/
 ```
 
