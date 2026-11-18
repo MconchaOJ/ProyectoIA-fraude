@@ -4,8 +4,9 @@ data/*.zip
 # Excepción: muestra pequeña de VALIDACIÓN para la demo de la interfaz (sí se versiona)
 !data/ejemplo_transacciones.csv
 
-# Modelos entrenados (se regeneran con python -m src.entrenar_baseline); los .json de metadatos sí se versionan
+# Modelos entrenados (los .json y el baseline liviano de 680 KB se versionan para que la app funcione al clonar o descargar)
 models/*.joblib
+!models/logistica_sin_balanceo.joblib
 
 # Entorno virtual y caché de Python
 .venv/
