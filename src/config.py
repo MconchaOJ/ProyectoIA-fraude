@@ -15,6 +15,7 @@ RANDOM_STATE = 42
 RAIZ = Path(__file__).resolve().parent.parent
 DIR_DATOS = RAIZ / "data"
 DIR_MODELOS = RAIZ / "models"
+DIR_DOCS = RAIZ / "docs"
 DIR_CAPTURAS = RAIZ / "docs" / "capturas"
 RUTA_CSV = DIR_DATOS / "creditcard.csv"
 
