@@ -20,7 +20,11 @@ from src.config import COLUMNA_OBJETIVO, DIR_DATOS, DIR_MODELOS  # noqa: E402
 from src.evaluacion import evaluar, graficar_curva_pr, graficar_matriz_confusion  # noqa: E402
 
 MODELOS = {
+    "Random Forest (Ensamble balanceado) ⭐": "random_forest.joblib",
     "Regresión logística (Baseline sin balanceo)": "logistica_sin_balanceo.joblib",
+    "Regresión logística (class_weight='balanced')": "logistica_balanceada.joblib",
+    "Regresión logística con SMOTE": "logistica_smote.joblib",
+    "Isolation Forest (No supervisado)": "isolation_forest.joblib",
 }
 RUTA_EJEMPLO = DIR_DATOS / "ejemplo_transacciones.csv"
 
@@ -151,11 +155,12 @@ def seccion_analizar():
 
     with col_izq:
         st.markdown("### ⚙️ Ajuste de Política de Riesgo")
+        umbral_inicial = float(metadatos.get("umbral_por_defecto", 0.5))
         umbral = st.slider(
             "Umbral de decisión (Score de fraude mínimo para activar alerta)",
             min_value=0.01,
             max_value=0.99,
-            value=float(metadatos["umbral_por_defecto"]),
+            value=umbral_inicial,
             step=0.01,
             help="Un umbral bajo prioriza capturar más fraudes (mayor Recall) asumiendo más revisiones manuales."
         )
@@ -291,34 +296,47 @@ def seccion_resultados():
                 "por el enorme peso de los verdaderos negativos. La curva **Precisión-Recall** y su área bajo la curva (**AUPRC**) "
                 "evalúan directamente la capacidad de rescatar transacciones fraudulentas sin inundar al equipo con falsas alarmas."
             )
-            mv = metadatos["metricas_val"]
-            st.metric("AUPRC Baseline", f"{mv['AUPRC']:.4f}")
-            st.metric("Precisión (umbral 0.5)", f"{mv['precision']*100:.1f}%")
-            st.metric("Recall (umbral 0.5)", f"{mv['recall']*100:.1f}%")
+            mv = metadatos.get("metricas_val", {})
+            st.metric("AUPRC", f"{mv.get('AUPRC', 0.0):.4f}")
+            st.metric("Precisión (umbral 0.5)", f"{mv.get('precision', 0.0)*100:.1f}%")
+            st.metric("Recall (umbral 0.5)", f"{mv.get('recall', 0.0)*100:.1f}%")
 
     with tab2:
         st.markdown("#### Desempeño según el Umbral Operativo")
         st.write("Evaluación proyectada sobre la totalidad del conjunto de validación (42.559 operaciones reales):")
-        df_u = pd.DataFrame(metadatos["umbrales_val"])
-        st.dataframe(
-            df_u,
-            column_config={
-                "umbral": st.column_config.NumberColumn("Umbral", format="%.2f"),
-                "precision": st.column_config.NumberColumn("Precisión", format="%.3f"),
-                "recall": st.column_config.NumberColumn("Recall", format="%.3f")
-            },
-            hide_index=True
-        )
-        st.info("💡 **Observación:** Al descender el umbral de 0,5 a 0,1, la detección de fraudes (Recall) se incrementa de un 49% a casi un 72%, con un impacto controlado en falsas alarmas.")
+        df_u = pd.DataFrame(metadatos.get("umbrales_val", []))
+        if not df_u.empty:
+            st.dataframe(
+                df_u,
+                column_config={
+                    "umbral": st.column_config.NumberColumn("Umbral", format="%.2f"),
+                    "precision": st.column_config.NumberColumn("Precisión", format="%.3f"),
+                    "recall": st.column_config.NumberColumn("Recall", format="%.3f")
+                },
+                hide_index=True
+            )
+        st.info("💡 **Observación:** Al ajustar el umbral de corte, se calibra la tasa de detección de fraudes (Recall) frente al volumen de falsas alarmas operativas.")
 
     with tab3:
         st.markdown("#### Parámetros del Entorno")
-        st.json({
-            "Pipeline": metadatos["hiperparametros"],
-            "Muestras de Entrenamiento": f"{metadatos['particion']['train']:,} transacciones ({metadatos['particion']['fraudes_train']} fraudes)",
-            "Tiempo de Ajuste": f"{metadatos['tiempo_entrenamiento_s']} segundos",
-            "Semilla Aleatoria": metadatos["random_state"]
-        })
+        particion_info = metadatos.get("particion", {})
+        if particion_info:
+            muestras_txt = f"{particion_info.get('train', 198608):,} transacciones ({particion_info.get('fraudes_train', 331)} fraudes en Train)"
+        else:
+            muestras_txt = "198.608 transacciones (331 fraudes en Train - 70%)"
+
+        info_dict = {
+            "Modelo": metadatos.get("nombre", nombre_modelo),
+            "Tipo": metadatos.get("tipo", "Supervisado"),
+            "Estrategia de Balanceo": metadatos.get("balanceo", "Ninguno"),
+            "Muestras de Entrenamiento": muestras_txt,
+            "Tiempo de Ajuste": f"{metadatos.get('tiempo_entrenamiento_s', 0):.2f} segundos",
+            "Semilla Aleatoria": metadatos.get("random_state", 42),
+            "Versión scikit-learn": metadatos.get("version_sklearn", "1.9.1")
+        }
+        if "hiperparametros" in metadatos:
+            info_dict["Hiperparámetros"] = metadatos["hiperparametros"]
+        st.json(info_dict)
 
 
 # ------------------------------------------------------------------ Sección 3: Acerca de
