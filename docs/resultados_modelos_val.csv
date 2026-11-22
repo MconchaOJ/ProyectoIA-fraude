@@ -1,0 +1,6 @@
+Modelo,Tipo,Manejo Desbalance,AUPRC,Recall (0.5),Precisión (0.5),F1 (0.5),TP (0.5),FP (0.5),Tiempo (s)
+Regresión logística (Baseline sin balanceo),Supervisado lineal,Ninguno,0.6877,0.493,0.8333,0.6195,35,7,1.06
+Regresión logística (class_weight='balanced'),Supervisado lineal,Ponderación (class_weight),0.6971,0.8873,0.0507,0.0959,63,1180,1.67
+Regresión logística con SMOTE,Supervisado lineal,Sobremuestreo (SMOTE),0.6987,0.8873,0.0487,0.0924,63,1230,3.15
+Random Forest (Ensamble balanceado),Supervisado no lineal,Ponderación (class_weight),0.828,0.7324,0.8667,0.7939,52,8,28.94
+Isolation Forest (No supervisado),No supervisado,No aplica,0.1105,0.7887,0.0452,0.0855,56,1183,2.87
