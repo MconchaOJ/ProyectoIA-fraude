@@ -46,22 +46,23 @@ Todos los comandos se ejecutan desde la raíz del proyecto, con el entorno activ
 | Paso | Comando / archivo |
 |---|---|
 | Exploración de datos | `notebooks/01_exploracion.ipynb` |
-| Baseline (análisis) | `notebooks/02_baseline.ipynb` |
-| Entrenar y guardar el modelo para la interfaz | `python -m src.entrenar_baseline` |
-| Regenerar el CSV de ejemplo de la demo | `python -m src.crear_csv_ejemplo` |
+| Baseline lineal | `notebooks/02_baseline.ipynb` |
+| Modelado comparativo (Avance 2) | `notebooks/03_modelos.ipynb` |
+| Entrenar todos los modelos (Avance 2) | `python -m src.entrenar_modelos` |
+| Entrenar solo baseline | `python -m src.entrenar_baseline` |
+| Regenerar CSV de ejemplo | `python -m src.crear_csv_ejemplo` |
 | Interfaz en Streamlit | `streamlit run app/app.py` |
 
 Los notebooks se abren con `jupyter notebook`.
 
-### Entrenar el modelo
+### Entrenar los modelos
 
 ```bash
-python -m src.entrenar_baseline
+# Entrena los 5 modelos del Avance 2 (Random Forest, SMOTE, Balanced, Baseline, Isolation Forest)
+python -m src.entrenar_modelos
 ```
 
-Entrena la regresión logística sin balanceo (baseline) con la partición 70/15/15 y genera:
-- `models/logistica_sin_balanceo.joblib`: el pipeline entrenado (no se versiona; se regenera con este comando).
-- `models/logistica_sin_balanceo.json`: metadatos (columnas esperadas, fecha, hiperparámetros, métricas en validación).
+Genera los binarios serializados `.joblib` y sus metadatos `.json` en `models/`, además de la comparativa de validación en `docs/resultados_modelos_val.csv`.
 
 ### Ejecutar la interfaz
 
