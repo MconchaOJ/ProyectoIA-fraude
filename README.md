@@ -19,7 +19,7 @@ engaña porque solo el 0,172 % de las transacciones son fraude).
 
 ## Instalación desde cero
 
-Requiere Python 3.10 o superior (probado con 3.14.7 en Windows).
+Requiere **Python 3.14** (probado con **Python 3.14.6** en Windows; versiones anteriores como Python 3.10 producen errores de compatibilidad con las dependencias fijadas en `requirements.txt`).
 
 ```bash
 # 1. Crear y activar el entorno virtual
@@ -70,7 +70,9 @@ Genera los binarios serializados `.joblib` y sus metadatos `.json` en `models/`,
 streamlit run app/app.py
 ```
 
-Se abre en el navegador (http://localhost:8501). Antes hay que haber entrenado el modelo. Para probarla se
+- **Video demostración Streamlit:** [https://youtu.be/-i5SbHytWRg](https://youtu.be/-i5SbHytWRg)
+
+Se abre en el navegador (http://localhost:8501). Si acabas de clonar el repositorio, la app funciona de inmediato con el modelo baseline incluido (`models/logistica_sin_balanceo.joblib`); para habilitar los 5 modelos del Avance 2 en local, ejecuta primero `python -m src.entrenar_modelos`. Para probarla se
 puede subir cualquier CSV con las columnas `Time`, `V1`–`V28` y `Amount` (si trae `Class`, se calculan
 métricas) o marcar la opción del CSV de ejemplo, `data/ejemplo_transacciones.csv`. Ese archivo tiene 2.000
 transacciones del conjunto de **validación**, con sus 71 fraudes. Como su proporción de fraudes (3,55 %) es
@@ -80,26 +82,27 @@ mucho mayor que la real, la precisión que se ve en la demo es más alta que la 
 
 ```
 ├── data/          # creditcard.csv (no versionado) y ejemplo_transacciones.csv (demo)
-├── notebooks/     # exploración (01) y baseline (02)
+├── notebooks/     # exploración (01), baseline (02) y modelado comparativo (03)
 ├── src/
 │   ├── config.py           # semilla (RANDOM_STATE = 42), rutas y proporciones 70/15/15
 │   ├── descargar_datos.py  # descarga del dataset con kagglehub
 │   ├── datos.py            # carga sin duplicados y partición 70/15/15
-│   ├── modelos.py          # definición de los pipelines
+│   ├── modelos.py          # definición de los pipelines (Baseline, Pesos, SMOTE, RF, IF)
 │   ├── evaluacion.py       # métricas, curva PR y matriz de confusión
 │   ├── entrenar_baseline.py
+│   ├── entrenar_modelos.py # entrenamiento y comparativa completa del Avance 2
 │   └── crear_csv_ejemplo.py
-├── models/        # modelos .joblib (no versionados) y sus metadatos .json
-├── app/           # interfaz Streamlit
-├── docs/          # registro IAG, métricas de validación y capturas
-└── informe/
+├── models/        # metadatos .json, baseline .joblib y binarios entrenados localmente
+├── app/           # interfaz Streamlit multi-modelo
+├── docs/          # registro IAG, presentaciones, métricas de validación y capturas
+└── informe/       # informes técnicos en PDF (Avance 1 y Avance 2)
 ```
 
 ## Reproducibilidad
 
 - Semilla única `RANDOM_STATE = 42` definida en `src/config.py`.
 - Partición estratificada 70/15/15 (train/val/test); el conjunto de prueba se usa una sola vez al final.
-- El escalado se aplica dentro de un `Pipeline`, ajustado solo con entrenamiento para evitar fuga de información (*data leakage*).
+- El escalado y el sobremuestreo (SMOTE) se aplican dentro de un `Pipeline`, ajustados solo con entrenamiento para evitar fuga de información (*data leakage*).
 
 ## Estado de Avances
 
@@ -111,6 +114,8 @@ mucho mayor que la real, la precisión que se ve en la demo es más alta que la 
   - Informe formal en PDF (`informe/`) y Anexo IAG completado (`docs/registro_iag.md`).
 
 - **Avance 2:**
-  - Implementación de `class_weight='balanced'` y sobremuestreo con SMOTE.
-  - Modelado no lineal (Random Forest) y detección no supervisada de anomalías (Isolation Forest) en `notebooks/03_modelos.ipynb`.
-  - Comparativa de desempeño contra el baseline y grabación de video demostrativo.
+  - Implementación de `class_weight='balanced'`, SMOTE solo en entrenamiento (`imblearn.Pipeline`), Random Forest (`max_depth=12`) e Isolation Forest (`IsolationForestWrapper`) en `src/modelos.py`, `src/entrenar_modelos.py` y `notebooks/03_modelos.ipynb`.
+  - Comparativa en validación contra el baseline: Random Forest alcanza AUPRC `0,828` (vs `0,688` del baseline).
+  - Interfaz Streamlit actualizada con selector multi-modelo, caché de doble nivel y comparativa poblacional (`app/app.py`).
+  - **Video demostración Streamlit:** [https://youtu.be/-i5SbHytWRg](https://youtu.be/-i5SbHytWRg)
+  - Informe técnico (`informe/Avance2_Deteccion_Fraude_UBB.pdf`), presentaciones en PDF (`docs/`) y Anexo IAG actualizado (`docs/registro_iag.md`).

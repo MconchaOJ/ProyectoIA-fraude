@@ -133,3 +133,40 @@
 - **Verificación hecha por el equipo:** Daniel ejecutó los notebooks directamente en Jupyter Notebook local observando las salidas y figuras guardadas en disco. Se probó la app en el navegador web local, verificando el comportamiento del slider de umbral y la visualización de la matriz de confusión.
 - **Análisis crítico:** La interfaz Streamlit inicial generaba un scroll vertical excesivo que no permitía comparar el umbral con las transacciones. El equipo rediseñó el layout a dos columnas y eliminó textos con tono de plantilla de IA para dotarla de un enfoque bancario profesional.
 - **Qué modificó o decidió el equipo:** Se sustituyó el título y la estructura visual de la app; se desmarcó el lote de prueba por defecto para permitir al usuario elegir la fuente de datos; se exportaron los diagramas a formato PNG para el informe académico y se eliminaron capturas obsoletas del repositorio.
+
+---
+
+### Entrada 14 — 2026-11-21 — Claude Code / Asistente Antigravity (Avance 2: Modelado Comparativo y Anti-Fuga)
+- **Prompt (resumido):** Implementar las técnicas de manejo de desbalance (`class_weight='balanced'` y SMOTE), Random Forest e Isolation Forest en `src/modelos.py`, `src/entrenar_modelos.py` y `notebooks/03_modelos.ipynb`, comparando contra el baseline del Avance 1.
+- **Respuesta / qué entregó:** Cuatro nuevos pipelines unificados (`crear_logistica_balanceada`, `crear_logistica_smote`, `crear_random_forest`, `crear_isolation_forest`), adaptador `IsolationForestWrapper` para normalizar `-score_samples` a probabilidades en `[0, 1]`, tabla comparativa de validación (`docs/resultados_modelos_val.csv`) y curvas Precisión-Recall superpuestas.
+- **Justificación del uso:** Acelerar la escritura de pipelines reproducibles con `imblearn.pipeline.Pipeline` y automatizar el benchmark de los 5 modelos bajo la misma partición estratificada.
+- **Verificación hecha por el equipo:** Ejecución completa local de `python -m src.entrenar_modelos` verificando métricas en validación (`42.559` transacciones, `71` fraudes) y comprobando que `X_test` e `y_test` permanecieran sellados y sin evaluar.
+- **Análisis crítico (sesgos y errores detectados en la IAG):** La IA propuso inicialmente entrenar Random Forest con `n_estimators=500` y `max_depth=None` (sin límite de profundidad) y llegó a sugerir mostrar ROC-AUC como métrica secundaria destacada.
+- **Qué modificó o decidió el equipo:** El equipo rechazó esa parametrización para evitar sobreajuste (*overfitting*) sobre los 331 fraudes de entrenamiento y tiempos altos de cómputo, podando a **`max_depth=12` y `100` árboles** (logrando AUPRC `0,8280` en `28,94 s`); rechazó ROC-AUC manteniendo **AUPRC** como métrica rectora; y auditó que SMOTE estuviera encapsulado dentro de `ImbPipeline` aprendiendo exclusivamente en `Train`.
+
+---
+
+### Entrada 15 — 2026-11-22 — Asistente Antigravity (Avance 2: Streamlit Multi-Modelo e Informe Técnico)
+- **Prompt (resumido):** Actualizar la interfaz `app/app.py` con selector dinámico para los 5 modelos, depurar errores al cambiar entre modelos y estructurar el informe técnico del Avance 2 respetando el máximo de 5 páginas.
+- **Respuesta / qué entregó:** Selector multi-modelo en la barra lateral, corrección de accesos inseguros en metadatos JSON (`KeyError` en `umbral_por_defecto` e `hiperparametros`, `NameError` en `modelo_id`), mejora del caché de doble nivel (`@st.cache_resource` y `@st.cache_data`) y borrador del informe técnico `informe/Avance2_Deteccion_Fraude_UBB.pdf`.
+- **Justificación del uso:** Depuración rápida de integración entre los binarios `.joblib` y Streamlit, y apoyo en maquetación técnica del informe manteniendo consistencia visual con el Avance 1.
+- **Verificación hecha por el equipo:** Prueba local en navegador (`streamlit run app/app.py`) alternando en vivo entre los 5 modelos sobre `ejemplo_transacciones.csv` (`2.000` filas) y verificando las métricas reales contra las `42.559` transacciones completas de validación; verificación manual del conteo de páginas exacto del informe (`5 páginas`).
+- **Análisis crítico:** Al probar la demo, el equipo corroboró que la precisión mostrada (`100 %` en lote demo vs `86,7 %` en validación completa) requiere explicación explícita por la prevalencia concentrada (`3,55 %` vs `0,167 %`), manteniendo la pestaña *Comparativa Poblacional* en el dashboard. Asimismo, en el análisis crítico del informe se constató que con solo `71` fraudes en validación los resultados deben tratarse como preliminares hasta abrir `Test` en diciembre.
+- **Qué modificó o decidió el equipo:** Se añadieron valores por defecto seguros en la lectura de metadatos de `app/app.py`, se verificaron todas las cifras directamente desde `docs/resultados_modelos_val.csv` y `models/*.json`, y se editó la redacción del informe para reflejar con rigor técnico los límites de `class_weight`, SMOTE e Isolation Forest.
+
+---
+
+### Entrada 16 — 2026-11-25 — Asistente Antigravity (Avance 2: Cierre de Entregables y Guión Explicativo)
+- **Prompt (resumido):** Preparación de guión oral enfocado en explicar intuitivamente el umbral de decisión (`0,5`), revisión de compatibilidad de `README.md` y consolidación del repositorio para entrega en Moodle.
+- **Respuesta / qué entregó:** Guía de explicación intuitiva del funcionamiento interno de los modelos y del umbral de corte, actualización de requisitos de Python en `README.md`, enlace al video demostrativo y limpieza final del repositorio.
+- **Justificación del uso:** Estructurar la comunicación técnica del equipo para la defensa oral individual (máx. 5 minutos) y validar la reproducibilidad de instalación.
+- **Verificación hecha por el equipo:** Al intentar instalar en otro equipo con Python 3.10 fallaron las dependencias fijadas (`numpy 2.5.4`, `pandas 3.1.1`, `scikit-learn 1.9.1`); se comprobó que el entorno validado corre en **Python 3.14.6**, actualizando el `README.md`. También se probó la exportación de validación completa vs lote demo en la app y se grabó el video demostrativo en vivo.
+- **Análisis crítico:** Se comprobó que la IA tiende a redactar guiones densos en cifras sin explicar el mecanismo intuitivo detrás del umbral; el equipo reenfocó el discurso hacia la interpretación causal (score continuo vs línea de corte).
+- **Qué modificó o decidió el equipo:** Se dejó explícita en `README.md` la compatibilidad real (Python 3.14) y el enlace público al video de demostración.
+
+---
+
+### Reflexión Intermedia sobre el Uso de IAG (Anexo Parcial — Avance 2)
+- **Cómo contribuyó:** Aceleró la estructuración modular del código (`src/modelos.py`, `src/entrenar_modelos.py`), la implementación de gráficas comparativas PR y la depuración de errores de integración en Streamlit, liberando tiempo al equipo para el análisis experimental y la preparación de la defensa oral.
+- **Limitaciones y sesgos observados:** (1) Tendencia de los modelos generativos a proponer arquitecturas sobreajustadas (`max_depth=None`, `500` árboles) o métricas inadecuadas para desbalance extremo (`ROC-AUC`, `accuracy`) si no se les imponen restricciones explícitas; (2) inconsistencias ocasionales entre nombres de claves en metadatos JSON y el código consumidor de la app (`KeyError` / `NameError` detectados al ejecutar en local); (3) desfase entre la versión de Python documentada inicialmente (`3.10`) y las versiones reales soportadas por los paquetes congelados (`3.14.6`).
+- **Criterio humano aplicado:** Ningún resultado ni hiperparámetro fue aceptado sin verificación empírica local sobre la partición estratificada con semilla `42`, manteniendo el conjunto de prueba (`Test`) completamente sellado para la evaluación final.
